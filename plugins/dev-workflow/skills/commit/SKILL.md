@@ -1,0 +1,46 @@
+---
+name: commit
+description: Create one or more git commits from the working tree changes, grouped by intent. Use when the user asks to commit ("commit this", "fais un commit", "commite ces changements"). Always propose the commit split BEFORE committing and wait for validation. Composable with the `pr` skill (which pushes + opens the pull/merge request).
+---
+
+# commit
+
+Create one or more commits from the working tree changes, **grouped by intent**.
+
+## Principle: atomic commits by intent
+
+A commit's unit is **the coherent logical change (the intent)**, never the file.
+
+- **1 intent → 1 commit**, regardless of file count (e.g. one feature = its implementation + wiring + tests = **1** commit).
+- **Never "one commit per file"**: it breaks atomicity (a commit must be checkout-able on its own without breaking anything — the code and its tests go together), revert/cherry-pick, `git bisect` and `git blame`.
+- Many files is **not** a problem. Many **intents** in the same commit = a grab-bag to avoid.
+- Quick test for a good intent: the commit can be described **in one sentence without "and"**, and the message describes an intent (not a filename, not a vague `wip`/`update`/`misc`).
+
+## Flow
+
+1. **Inspect**: `git status` + `git diff` (tracked modified files) **and** the list of untracked files — all are candidates.
+2. **Group by intent**: classify modified **and untracked** files by logical change. Detect whether the working tree has **multiple intents**.
+3. **Propose the split BEFORE committing**: present the planned commit(s) to the user — for each one: the file list and the proposed message. **Wait for validation.** Never commit without agreement, even if there's only one intent.
+4. **Commit**: for each validated commit, explicitly stage the relevant files then `git commit`.
+
+## Staging
+
+- Always stage the **precise files** of a commit: `git add <path> <path>`.
+- **Never** `git add -A`, `git add .` or `git add -u`.
+- **Untracked files are candidates like any others**: a new file is often integral to an intent, and goes in the same commit as the related tracked files. Classify them by intent just like modified ones.
+- Since the split is **always proposed and confirmed** before committing, the user sees exactly which untracked files would be staged and can exclude any — that's the guardrail, not a default exclusion.
+- Stay vigilant on untracked files that have no business in any commit (secrets/`.env`, build artifacts, scratch, unrelated WIP): don't bundle them and flag them if they're lying around.
+
+## Guardrails
+
+- Keep the user in control of git: show the split/diff and **ask before** every mutating operation.
+- If on the default branch (`main`/`master`), **branch first** instead of committing on it. Naming: allowed prefixes `fix/`, `feature/`, `docs/`, `refactor/`, `chore/`; **ask/confirm** the rest of the name (don't invent it).
+
+## Message
+
+- Format: **conventional commits, in French** (personal convention): `type(scope): subject`.
+- The **scope is used** (e.g. `fix(billing): arrondit les montants…`, `docs(readme): …`).
+- Short, descriptive subject, lowercase after the `:`.
+- **Body** when the change warrants it: explains the **why** (the problem being solved), not the "what" already visible in the diff.
+- **Never a `Co-Authored-By` trailer** — no co-author.
+- **No ticket reference** in the commit message — ticket(s) belong in the PR (cf. `pr` skill).
