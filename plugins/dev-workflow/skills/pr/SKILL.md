@@ -19,7 +19,12 @@ git remote get-url origin            # github.com → GitHub ; gitlab.* → GitL
 git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'   # default branch; fall back to main/master
 ```
 
-Pick the CLI accordingly: **`gh`** for GitHub, **`glab`** for GitLab. If the matching CLI isn't installed, say so and stop (don't fall back to a half-working path).
+Pick the tool accordingly:
+
+- **GitHub**: prefer **`gh`**. If `gh` isn't installed, fall back to the **GitHub MCP server** (`create_pull_request` tool) when it's connected — see step 6.
+- **GitLab**: **`glab`**, or the `git push -o merge_request.*` options below (no `glab` needed).
+
+Only stop if **no working path** exists for the platform (no CLI **and** no MCP). Never substitute a non-creating shortcut (e.g. a prefilled `…/compare?…` or `…/merge_requests/new?…` URL) for actually opening the PR/MR — that just hands the work back to the user.
 
 ## Flow
 
@@ -32,12 +37,18 @@ Pick the CLI accordingly: **`gh`** for GitHub, **`glab`** for GitLab. If the mat
 5. **Show the recap** (platform, target branch, title, description, draft on/off) and **ask for confirmation** before pushing/creating.
 6. **Push, then create the PR/MR:**
 
-   **GitHub:**
+   **GitHub — with `gh`:**
    ```bash
    git push -u origin <branch>
    gh pr create --base <default-branch> --head <branch> \
      --title "<title>" --body "<description>" --draft
    ```
+
+   **GitHub — without `gh` (MCP fallback):** push the branch with `git` first (the MCP tool only references an already-pushed branch), then create the PR via the GitHub MCP `create_pull_request` tool.
+   ```bash
+   git push -u origin <branch>
+   ```
+   Then call `mcp__github__create_pull_request` with `owner` + `repo` (parsed from the `origin` URL), `head=<branch>`, `base=<default-branch>`, `title`, `body`, `draft`. Load the tool first with ToolSearch `select:mcp__github__create_pull_request` if it isn't already available. It returns JSON `{"url": "...", "id": ...}` — report that `url`.
 
    **GitLab** (via push options, single command):
    ```bash
@@ -54,6 +65,7 @@ Pick the CLI accordingly: **`gh`** for GitHub, **`glab`** for GitLab. If the mat
 
 7. **Read the output and report** the PR/MR URL:
    - `gh` prints the PR URL directly.
+   - GitHub MCP `create_pull_request` returns JSON `{"url": ...}` → report that `url`.
    - GitLab returns the URL in the push output. A `…/-/merge_requests/<NNN>` URL **with** "already exists" → "MR already existed" + URL (new commits were pushed to it). **Without** it → "MR created" + URL. Only a `…/new?...` URL → no MR created → flag it.
 
 ## Defaults
