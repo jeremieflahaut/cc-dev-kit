@@ -18,7 +18,7 @@ A commit's unit is **the coherent logical change (the intent)**, never the file.
 
 ## Flow
 
-1. **Inspect**: `git status` + `git diff` (tracked modified files) **and** the list of untracked files — all are candidates.
+1. **Inspect**: `git status` + `git diff` (tracked modified files) **and** the list of untracked files — all are candidates. Also `git log --oneline -15 --no-merges` to pick up the language of the repo's existing commit messages.
 2. **Group by intent**: classify modified **and untracked** files by logical change. Detect whether the working tree has **multiple intents**.
 3. **Propose the split BEFORE committing**: present the planned commit(s) to the user — for each one: the file list and the proposed message. **Wait for validation.** Never commit without agreement, even if there's only one intent.
 4. **Commit**: for each validated commit, explicitly stage the relevant files then `git commit`.
@@ -38,8 +38,9 @@ A commit's unit is **the coherent logical change (the intent)**, never the file.
 
 ## Message
 
-- Format: **conventional commits, in French** (personal convention): `type(scope): subject`.
-- The **scope is used** (e.g. `fix(billing): arrondit les montants…`, `docs(readme): …`).
+- Format: **conventional commits**: `type(scope): subject` — the format stays conventional even when the history isn't (adapt the language, not the format).
+- **Language: follow the repo's existing commit history** (from the `git log` done at the Inspect step) — write in the dominant language of recent **human-written** messages (ignore merge and bot commits: dependabot, release bots…), never mix languages within the same repo. Default to **English** when the history is empty or has no clear majority.
+- The **scope is used** (e.g. `fix(billing): arrondit les montants…`, `feat(auth): add login route`, `docs(readme): …`).
 - Short, descriptive subject, lowercase after the `:`.
 - **Body** when the change warrants it: explains the **why** (the problem being solved), not the "what" already visible in the diff.
 - **Never a `Co-Authored-By` trailer** — no co-author.

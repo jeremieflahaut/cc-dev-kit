@@ -33,7 +33,7 @@ Only stop if **no working path** exists for the platform (no CLI **and** no MCP)
    - **ask**: commit first (skill `commit`) **or** push the committed state as-is. No hard block — the user decides.
 2. **Ask for ticket number(s)** if the user's workflow uses them (optional — skip if they don't).
 3. **Build the title**: branch name, optionally prefixed with `[<tickets>]` if given. e.g. branch `fix/login`, ticket 1234 → `[1234] fix/login`; no ticket → `fix/login`.
-4. **Write a short free-form description** (a few lines: the gist of what/why). Personal convention is **French** — keep it French unless the user asks otherwise.
+4. **Write a short free-form description** (a few lines: the gist of what/why). In **French** by default (personal convention), unless the user asks otherwise — deliberately independent of the commit-message language, which follows the repo history (see `commit`).
 5. **Show the recap** (platform, target branch, title, description, draft on/off) and **ask for confirmation** before pushing/creating.
 6. **Push, then create the PR/MR:**
 
