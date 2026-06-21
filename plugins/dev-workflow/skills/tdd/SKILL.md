@@ -163,7 +163,9 @@ runs *through* the delegation (main → delegate → return → run tests → st
 
 Once green, the lock stops anyone editing the tests — but the implementation could still have
 **hard-coded the test inputs** instead of implementing the feature. Dispatch a subagent in a **fresh
-context** (e.g. a code-reviewer / senior agent) that sees only the **diff + the feature description**
+context** — the project's review specialist, resolved like Step 3 (`laravel-code-reviewer` with
+`laravel-workflow`, `code-reviewer` with `dev-workflow`, else whatever reviewer the project has) —
+that sees only the **diff + the feature description**
 and answers: *does this genuinely implement the feature, or does it overfit the specific test cases?*
 Tell it to report only **correctness / requirement** gaps, not style. A real gap → add a test for it
 (back to Step 1, red) and let the loop close again. Otherwise, done.

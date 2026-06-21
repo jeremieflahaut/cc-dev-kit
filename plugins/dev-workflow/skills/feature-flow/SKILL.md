@@ -1,6 +1,7 @@
 ---
 name: feature-flow
 description: Orchestrate a multi-step feature lifecycle (plan → build → review → fix-loop) by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extra specialists discovered in `.claude/agents/` or `~/.claude/agents/`) in the right order and maintaining state via artifacts under `.claude/{plans,reviews,lifecycle}/`. Project-agnostic — what it can orchestrate depends only on which specialists are present. Use when the user wants to implement a feature end-to-end, chain plan + implementation + review, have the next step picked automatically, or resume a feature already in progress. NOT for a one-shot task a single specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where the tests are written and locked before the code — use the `tdd` skill.
+tools: Read, Write, Bash, Agent
 ---
 
 # feature-flow

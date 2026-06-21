@@ -41,7 +41,7 @@ In a multi-repo workspace, run git in the correct sub-repo.
 - Jobs that don't declare a queue, or declare one that doesn't exist in the app's config (the relevant service's, if the codebase is split into several).
 - New `event()`/Listener/Policy usage where the project wires things differently (a direct call/dispatch, or — across services — a message broker / HTTP) — flag for confirmation.
 - Reinventing a helper the project's shared/vendored packages already provide.
-- New code that's needlessly hard to test or swap — e.g. a new class that hard-news a concrete dependency the project injects elsewhere, or a unit that can't be exercised in isolation. Only on the **changed** code; don't ask for a refactor of pre-existing code, and don't flag a deliberate project pattern as a defect.
+- New code that's needlessly hard to test or swap — e.g. a new class that hard-codes a concrete dependency the project injects elsewhere, or a unit that can't be exercised in isolation. Only on the **changed** code; don't ask for a refactor of pre-existing code, and don't flag a deliberate project pattern as a defect.
 - Auth: flag calls that won't work given the project's auth model (e.g. reading the user from the auth guard in a service that receives identity via forwarded headers) — but first confirm the model from the project's docs; don't assume.
 - Tests in the wrong folder, missing grouping, unscoped assertions (`Model::all()`/`first()` without filtering to data the test created), hardcoded unique values instead of faker, "didn't crash" assertions with no post-condition.
 
