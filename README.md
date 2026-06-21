@@ -1,4 +1,4 @@
-# claude-dev-kit
+# claude-marketplace
 
 A personal, **stack-agnostic** Claude Code marketplace. One plugin, `dev-workflow`, bundling the agents and skills I reuse across projects.
 
@@ -22,10 +22,10 @@ Unlike project-specific agents, these hardcode **no paths and no framework**. Th
 
 ```bash
 # add this repo as a marketplace
-/plugin marketplace add https://github.com/<you>/claude-dev-kit
+/plugin marketplace add https://github.com/<you>/claude-marketplace
 
 # install the plugin
-/plugin install dev-workflow@claude-dev-kit
+/plugin install dev-workflow@claude-marketplace
 ```
 
-To update later: `/plugin marketplace update claude-dev-kit`.
+To update later: `/plugin marketplace update claude-marketplace`.
