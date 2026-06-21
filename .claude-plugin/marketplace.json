@@ -1,8 +1,7 @@
 {
   "name": "claude-marketplace",
   "owner": {
-    "name": "Jérémie Flahaut",
-    "email": ""
+    "name": "Jérémie Flahaut"
   },
   "plugins": [
     {

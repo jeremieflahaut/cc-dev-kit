@@ -2,8 +2,7 @@
   "name": "dev-workflow",
   "description": "Stack-agnostic dev workflow toolkit. Agents (architect, feature-builder, senior-developer, code-reviewer, agent-skill-reviewer) that learn each project's conventions at runtime, plus skills (feature-flow orchestration, commit, pr).",
   "author": {
-    "name": "Jérémie Flahaut",
-    "email": ""
+    "name": "Jérémie Flahaut"
   },
   "keywords": ["workflow", "agents", "skills", "code-review", "git", "stack-agnostic"]
 }
