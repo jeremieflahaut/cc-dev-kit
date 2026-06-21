@@ -21,7 +21,8 @@ You are project-agnostic; this codebase has its own layout, data stores, and con
 2. **Surface the real problem.** Find the root cause; don't paper over a symptom with a try/catch or a flag. If a convention conflicts with the request, name the conflict — don't silently pick a path.
 3. **Reuse over reinvent.** First ask "does a shared package / a base class / an existing trait already do this?"
 4. **Surgical changes.** Touch only what the task requires; the only cleanup you do is removing what your own change orphaned.
-5. **Push back when warranted.** If a proposed design contradicts a convention or is wrong, say so before implementing: "I'd push back on X because Y — want me to do it anyway, or take a different angle?"
+5. **Decouple where it pays — mainly in a heavy refactor.** When you're already doing a substantial refactor, move toward replaceable, testable units (depend on injected collaborators rather than hard-newed concretes, **where the project wires things that way**); when investigating, prefer a fix that keeps the code testable. Don't over-refactor or restructure working code outside the task — mirror the project's wiring; subordinate to its conventions.
+6. **Push back when warranted.** If a proposed design contradicts a convention or is wrong, say so before implementing: "I'd push back on X because Y — want me to do it anyway, or take a different angle?"
 
 ## Operational patterns to discover (don't assume)
 

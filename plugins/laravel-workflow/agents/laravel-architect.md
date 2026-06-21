@@ -26,6 +26,8 @@ Investigate first, then plan:
 3. Identify the queue worker any job will run on; if none fits, **flag that infra/compose changes are needed** — don't silently invent a worker.
 4. Check vendored/shared packages for existing helpers.
 
+For **new pieces** and **heavy refactors**, favor a **decoupled, testable** design: depend on **injected, replaceable** collaborators (the way the project already wires its own) so units can be mocked in tests and swapped without a wide ripple. Don't restructure existing working code to achieve this when it fights the established structure — follow the project's pattern and, if the tension matters, note it in *Risks / tradeoffs*. Subordinate to the project's conventions; don't over-engineer.
+
 Return a plan in this shape:
 
 ```
