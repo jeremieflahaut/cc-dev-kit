@@ -14,6 +14,6 @@ Use alongside `dev-workflow`: its `feature-flow` skill discovers whatever agents
 ## Install
 
 ```bash
-/plugin marketplace add https://github.com/<you>/claude-marketplace
-/plugin install laravel-workflow@claude-marketplace
+/plugin marketplace add https://github.com/<you>/cc-dev-kit
+/plugin install laravel-workflow@cc-dev-kit
 ```
