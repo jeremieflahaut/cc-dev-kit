@@ -1,0 +1,8 @@
+{
+  "name": "laravel-workflow",
+  "description": "Laravel-specialized dev agents (laravel-architect, laravel-feature-builder, laravel-senior-developer, laravel-code-reviewer) that learn each Laravel project's own conventions at runtime — no project hardcoded. Complements the stack-agnostic dev-workflow; its feature-flow skill orchestrates these automatically when present.",
+  "author": {
+    "name": "Jérémie Flahaut"
+  },
+  "keywords": ["laravel", "php", "agents", "code-review", "stack-specific"]
+}
