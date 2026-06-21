@@ -8,7 +8,6 @@ Stack-agnostic dev workflow toolkit for Claude Code. The agents learn each proje
 | `feature-builder` | agent | Implements a feature end-to-end, matching the repo's patterns. |
 | `senior-developer` | agent | Judgment work: investigations, tuning, refactors. |
 | `code-reviewer` | agent | Reviews a diff against the project's own conventions. Read-only. |
-| `agent-skill-reviewer` | agent | Reviews Claude Code agent/skill definition files. Read-only. |
 | `feature-flow` | skill | Orchestrates plan → build → review → fix-loop over the agents above. |
 | `commit` | skill | Atomic git commits grouped by intent. |
 | `pr` | skill | Push + open a PR (GitHub) / MR (GitLab), platform auto-detected. |

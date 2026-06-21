@@ -1,5 +1,6 @@
 {
   "name": "cc-dev-kit",
+  "description": "Personal Claude Code marketplace: stack-agnostic and Laravel dev-workflow agents/skills, plus meta tooling for authoring agents and skills. Nothing hardcodes a project — agents learn each repo's conventions at runtime.",
   "owner": {
     "name": "Jérémie Flahaut"
   },
@@ -7,12 +8,17 @@
     {
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
-      "description": "Stack-agnostic dev workflow: architect / feature-builder / senior-developer / code-reviewer / agent-skill-reviewer agents, plus feature-flow orchestration and commit / pr git skills. The agents learn each project's conventions at runtime by reading its CLAUDE.md and sibling files — no hardcoded paths or framework."
+      "description": "Stack-agnostic dev workflow: architect / feature-builder / senior-developer / code-reviewer agents, plus skills for feature-flow orchestration and commit / pr git. The agents learn each project's conventions at runtime by reading its CLAUDE.md and sibling files — no hardcoded paths or framework."
     },
     {
       "name": "laravel-workflow",
       "source": "./plugins/laravel-workflow",
       "description": "Laravel-specialized dev agents (laravel-architect / laravel-feature-builder / laravel-senior-developer / laravel-code-reviewer) that learn each Laravel project's own conventions at runtime — no project hardcoded. Complements dev-workflow; its feature-flow skill orchestrates these automatically when present."
+    },
+    {
+      "name": "meta-workflow",
+      "source": "./plugins/meta-workflow",
+      "description": "Toolkit for authoring Claude Code assets. The agent-skill-reviewer agent reviews subagent / skill definition files (.claude/agents/<name>.md, SKILL.md) for trigger quality, internal coherence, and routing overlap — read-only, returns a report. Complements dev-workflow, which targets application code."
     }
   ]
 }

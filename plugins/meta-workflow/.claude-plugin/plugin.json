@@ -1,0 +1,8 @@
+{
+  "name": "meta-workflow",
+  "description": "Toolkit for authoring Claude Code assets. Reviews subagent and skill definition files (.claude/agents/<name>.md, SKILL.md) for trigger quality, internal coherence, and routing overlap with siblings — read-only, returns a report. Complements dev-workflow, which targets application code; this one targets the agent/skill definitions themselves.",
+  "author": {
+    "name": "Jérémie Flahaut"
+  },
+  "keywords": ["meta", "agents", "skills", "authoring", "review", "claude-code"]
+}
