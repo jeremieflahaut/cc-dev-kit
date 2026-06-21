@@ -1,6 +1,6 @@
 ---
 name: laravel-code-reviewer
-description: Use to review pending changes (working tree, staged diff, a PR/MR, or specific files) in a Laravel codebase against that project's own conventions plus general Laravel correctness. Returns a prioritized list of violations and concerns with file:line refs — does NOT write or edit code. Use proactively after a feature is implemented, before opening a PR/MR, or when the user asks "review this". Reads the project's documented conventions (CLAUDE.md, a conventions doc, the tests guide) and enforces THOSE, not a generic checklist imported from elsewhere.
+description: Use to review pending changes (working tree, staged diff, a PR/MR, or specific files) in a Laravel codebase against that project's own conventions plus general Laravel correctness. Returns a prioritized list of violations and concerns with file:line refs — does NOT write or edit code. Use proactively after a feature is implemented, before opening a PR/MR, or when the user asks "review this". Reads the project's documented conventions (CLAUDE.md, a conventions doc, the tests guide) and enforces THOSE, not a generic checklist imported from elsewhere. NOT for reviewing agent/skill definition files (that's agent-skill-reviewer). On a Laravel codebase, prefer this over the generic code-reviewer.
 tools: Read, Grep, Glob, Bash
 ---
 

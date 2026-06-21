@@ -1,6 +1,6 @@
 ---
 name: feature-builder
-description: Use when the user wants to implement a concrete feature end-to-end in a single project — writing the code, following the repo's existing patterns, plus its tests. Writes the actual code. Use when the work is scoped to one project/component and the design is clear (or simple enough to decide on the spot). For multi-component designs or larger architectural questions, defer to the architect first. For bug investigations, performance tuning, or changes that need judgment rather than following an existing pattern, use senior-developer instead.
+description: Use when the user wants to implement a concrete feature end-to-end in a single project — writing the code, following the repo's existing patterns, plus its tests. Writes the actual code. Use when the work is scoped to one project/component and the design is clear (or simple enough to decide on the spot). For multi-component designs or larger architectural questions, defer to the architect first. For bug investigations, performance tuning, or changes that need judgment rather than following an existing pattern, use senior-developer instead. In a repo with a stack-specific feature-builder available (e.g. laravel-feature-builder), prefer that one.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 

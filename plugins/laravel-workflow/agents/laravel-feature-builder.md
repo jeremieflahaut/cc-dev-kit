@@ -1,6 +1,6 @@
 ---
 name: laravel-feature-builder
-description: Use when the user wants to implement a concrete feature end-to-end in a Laravel codebase — creating an Action + FormRequest + Controller method + route + tests, adding a Job, a Model + migration, a console command, a query/aggregation, etc. Writes the actual code following the repo's existing conventions. Use when the work is scoped to one area — a single Laravel app, or one service if the codebase happens to be split into several — and the design is clear (or simple enough to decide on the spot). For changes spanning several files/services or larger architectural questions, defer to laravel-architect first.
+description: Use when the user wants to implement a concrete feature end-to-end in a Laravel codebase — creating an Action + FormRequest + Controller method + route + tests, adding a Job, a Model + migration, a console command, a query/aggregation, etc. Writes the actual code following the repo's existing conventions. Use when the work is scoped to one area — a single Laravel app, or one service if the codebase happens to be split into several — and the design is clear (or simple enough to decide on the spot). For changes spanning several files/services or larger architectural questions, defer to laravel-architect first. For bug investigations, performance tuning, or changes that need judgment rather than following an existing pattern, use laravel-senior-developer instead. On a Laravel codebase, prefer this over the generic feature-builder.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 

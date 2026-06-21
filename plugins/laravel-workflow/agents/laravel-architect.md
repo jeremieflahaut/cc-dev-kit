@@ -1,6 +1,6 @@
 ---
 name: laravel-architect
-description: Use proactively when the user wants to design a non-trivial feature or change that spans multiple files or services in a Laravel codebase — anything involving more than one Action/class, a new flow across modules (or services, in a multi-service workspace), a queue worker, a new data store or collection, a new endpoint surface, or a refactor across modules. Returns an implementation plan (files to create/edit, which Action/FormRequest/Job/route/test) — does NOT write code. Do NOT use for one-line fixes, single-file edits, or pure review tasks.
+description: Use proactively when the user wants to design a non-trivial feature or change that spans multiple files or services in a Laravel codebase — anything involving more than one Action/class, a new flow across modules (or services, in a multi-service workspace), a queue worker, a new data store or collection, a new endpoint surface, or a refactor across modules. Returns an implementation plan (files to create/edit, which Action/FormRequest/Job/route/test) — does NOT write code. Do NOT use for one-line fixes, single-file edits, or pure review tasks. On a Laravel codebase, prefer this over the generic architect.
 tools: Read, Grep, Glob, Bash, WebFetch
 ---
 

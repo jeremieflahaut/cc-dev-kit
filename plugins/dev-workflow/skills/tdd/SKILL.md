@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Drive a feature test-first (red → green) — write the failing tests FIRST, lock them, then loop hands-free until they pass, wiring the project's OWN test conventions and implementation agents into the loop. Use when the user says "TDD", "test-first", "test-driven", "red-green", "write a failing test then implement", "build/develop X test-first", "faire du TDD", "développe X en TDD". This skill WRITES application code to make the tests pass. NOT for raising coverage on code that already exists — for that, use an after-the-fact testing/coverage skill if the project provides one (it writes tests against existing source and never edits it).
+description: Drive a feature test-first (red → green) — write the failing tests FIRST, lock them, then loop hands-free until they pass, wiring the project's OWN test conventions and implementation agents into the loop. Use when the user says "TDD", "test-first", "test-driven", "red-green", "write a failing test then implement", "build/develop X test-first", "faire du TDD", "développe X en TDD". This skill WRITES application code to make the tests pass. NOT for raising coverage on code that already exists — for that, use an after-the-fact testing/coverage skill if the project provides one (it writes tests against existing source and never edits it). For a plan → build → review feature lifecycle that is NOT test-first, use the `feature-flow` skill.
 tools: Read, Edit, Write, Glob, Grep, Bash, Agent, AskUserQuestion
 ---
 
