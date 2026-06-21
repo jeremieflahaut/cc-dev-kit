@@ -1,6 +1,6 @@
 {
   "name": "dev-workflow",
-  "description": "Stack-agnostic dev workflow toolkit. Agents (architect, feature-builder, senior-developer, code-reviewer) that learn each project's conventions at runtime, plus skills (feature-flow orchestration, commit, pr).",
+  "description": "Stack-agnostic dev workflow toolkit. Agents (architect, feature-builder, senior-developer, code-reviewer) that learn each project's conventions at runtime, plus skills (feature-flow orchestration, tdd, commit, pr).",
   "author": {
     "name": "Jérémie Flahaut"
   },

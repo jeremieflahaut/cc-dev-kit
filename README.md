@@ -13,6 +13,7 @@ Assumes **no framework**. Works on any codebase.
 - `senior-developer` — judgment work: investigations, tuning, refactors, deep answers.
 - `code-reviewer` — reviews a diff against the project's own conventions, read-only.
 - `feature-flow` (skill) — orchestrates plan → build → review → fix-loop across the agents above.
+- `tdd` (skill) — drives a feature test-first (red → green): writes the failing tests, locks them, then loops hands-free until they pass.
 - `commit` (skill) — atomic git commits grouped by intent.
 - `pr` (skill) — push + open a pull request (GitHub) or merge request (GitLab), platform auto-detected.
 

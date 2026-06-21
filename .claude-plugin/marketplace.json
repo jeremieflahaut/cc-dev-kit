@@ -8,7 +8,7 @@
     {
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
-      "description": "Stack-agnostic dev workflow: architect / feature-builder / senior-developer / code-reviewer agents, plus skills for feature-flow orchestration and commit / pr git. The agents learn each project's conventions at runtime by reading its CLAUDE.md and sibling files — no hardcoded paths or framework."
+      "description": "Stack-agnostic dev workflow: architect / feature-builder / senior-developer / code-reviewer agents, plus skills for feature-flow orchestration, test-first TDD, and commit / pr git. The agents learn each project's conventions at runtime by reading its CLAUDE.md and sibling files — no hardcoded paths or framework."
     },
     {
       "name": "laravel-workflow",
