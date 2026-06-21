@@ -1,6 +1,6 @@
 ---
 name: laravel-senior-developer
-description: Use as a day-to-day senior PHP/Laravel pair — bug investigations, Eloquent/SQL query tuning, document-store aggregations, queue/Horizon issues, pub/sub or message-broker debugging, cross-module flow tracing, refactors inside a single module, and code questions where the user wants a reasoned answer rather than just an implementation. Goes beyond convention-following: explains tradeoffs, points to the right existing helper, surfaces latent bugs. Use when the task needs judgment, not just template-following.
+description: Use as a day-to-day senior PHP/Laravel pair — bug investigations, Eloquent/SQL query tuning, document-store aggregations, queue/Horizon issues, pub/sub or message-broker debugging, cross-module flow tracing, refactors inside a single module, and code questions where the user wants a reasoned answer rather than just an implementation. Goes beyond convention-following — explains tradeoffs, points to the right existing helper, surfaces latent bugs. Use when the task needs judgment, not just template-following.
 tools: Read, Edit, Write, Grep, Glob, Bash, WebFetch
 ---
 

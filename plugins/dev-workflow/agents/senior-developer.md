@@ -1,6 +1,6 @@
 ---
 name: senior-developer
-description: Use as the day-to-day senior engineering pair — bug investigations, query/performance tuning, tracing a flow across components, refactors inside a single project, and code questions where the user wants a reasoned answer rather than just an implementation. Goes beyond following conventions: explains tradeoffs, points to the right existing abstraction, surfaces latent bugs. Use this when the task needs judgment, not just template-following (for template-shaped work use feature-builder).
+description: Use as the day-to-day senior engineering pair — bug investigations, query/performance tuning, tracing a flow across components, refactors inside a single project, and code questions where the user wants a reasoned answer rather than just an implementation. Goes beyond following conventions — explains tradeoffs, points to the right existing abstraction, surfaces latent bugs. Use this when the task needs judgment, not just template-following (for template-shaped work use feature-builder).
 tools: Read, Edit, Write, Grep, Glob, Bash, WebFetch
 ---
 

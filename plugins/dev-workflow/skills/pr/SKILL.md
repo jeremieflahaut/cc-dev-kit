@@ -1,6 +1,6 @@
 ---
 name: pr
-description: Push the current branch to origin and open a pull request (GitHub) or merge request (GitLab) targeting the default branch. Auto-detects the platform from the origin remote. Use when the user asks to open/create a PR/MR ("open the PR", "push and open the merge request", "fais une PR/MR"). Composable with `commit`: assumes commits are already in place.
+description: Push the current branch to origin and open a pull request (GitHub) or merge request (GitLab) targeting the default branch. Auto-detects the platform from the origin remote. Use when the user asks to open/create a PR/MR ("open the PR", "push and open the merge request", "fais une PR/MR"). Composable with `commit` — assumes commits are already in place.
 ---
 
 # pr
