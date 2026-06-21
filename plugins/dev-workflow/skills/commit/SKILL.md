@@ -44,4 +44,4 @@ A commit's unit is **the coherent logical change (the intent)**, never the file.
 - Short, descriptive subject, lowercase after the `:`.
 - **Body** when the change warrants it: explains the **why** (the problem being solved), not the "what" already visible in the diff.
 - **Never a `Co-Authored-By` trailer** — no co-author.
-- **No ticket reference** in the commit message — ticket(s) belong in the PR (cf. `pr` skill).
+- **No ticket reference** in the commit message.

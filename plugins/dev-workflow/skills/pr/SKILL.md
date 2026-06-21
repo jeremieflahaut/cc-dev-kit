@@ -21,7 +21,7 @@ git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/ori
 
 Pick the tool accordingly:
 
-- **GitHub**: prefer **`gh`**. If `gh` isn't installed, fall back to the **GitHub MCP server** (`create_pull_request` tool) when it's connected — see step 6.
+- **GitHub**: prefer **`gh`**. If `gh` isn't installed, fall back to the **GitHub MCP server** (`create_pull_request` tool) when it's connected — see step 5.
 - **GitLab**: **`glab`**, or the `git push -o merge_request.*` options below (no `glab` needed).
 
 Only stop if **no working path** exists for the platform (no CLI **and** no MCP). Never substitute a non-creating shortcut (e.g. a prefilled `…/compare?…` or `…/merge_requests/new?…` URL) for actually opening the PR/MR — that just hands the work back to the user.
@@ -31,11 +31,10 @@ Only stop if **no working path** exists for the platform (no CLI **and** no MCP)
 1. **Check state**: current branch ≠ default branch, commits present. Run `git status --porcelain`; if **not empty**, don't push silently:
    - list the uncommitted changes, distinguishing **tracked modified files** (often an oversight that should be in the PR → flag clearly) from **untracked files** (often WIP left aside → flag without alarm);
    - **ask**: commit first (skill `commit`) **or** push the committed state as-is. No hard block — the user decides.
-2. **Ask for ticket number(s)** if the user's workflow uses them (optional — skip if they don't).
-3. **Build the title**: branch name, optionally prefixed with `[<tickets>]` if given. e.g. branch `fix/login`, ticket 1234 → `[1234] fix/login`; no ticket → `fix/login`.
-4. **Write a short free-form description** (a few lines: the gist of what/why). In **French** by default (personal convention), unless the user asks otherwise — deliberately independent of the commit-message language, which follows the repo history (see `commit`).
-5. **Show the recap** (platform, target branch, title, description, draft on/off) and **ask for confirmation** before pushing/creating.
-6. **Push, then create the PR/MR:**
+2. **Build the title** from the current branch name (e.g. branch `fix/login` → title `fix/login`).
+3. **Write a short free-form description** (a few lines: the gist of what/why). In **French** by default (personal convention), unless the user asks otherwise — deliberately independent of the commit-message language, which follows the repo history (see `commit`).
+4. **Show the recap** (platform, target branch, title, description, draft on/off) and **ask for confirmation** before pushing/creating.
+5. **Push, then create the PR/MR:**
 
    **GitHub — with `gh`:**
    ```bash
@@ -63,7 +62,7 @@ Only stop if **no working path** exists for the platform (no CLI **and** no MCP)
    ```
    ⚠️ **GitLab push options reject real newlines** (`fatal: push options must not have new line characters`). Encode line breaks as literal `\n` inside a **single-quoted** bash string — GitLab renders them server-side. Capture stderr too (GitLab messages come back as `remote:`).
 
-7. **Read the output and report** the PR/MR URL:
+6. **Read the output and report** the PR/MR URL:
    - `gh` prints the PR URL directly.
    - GitHub MCP `create_pull_request` returns JSON `{"url": ...}` → report that `url`.
    - GitLab returns the URL in the push output. A `…/-/merge_requests/<NNN>` URL **with** "already exists" → "MR already existed" + URL (new commits were pushed to it). **Without** it → "MR created" + URL. Only a `…/new?...` URL → no MR created → flag it.
