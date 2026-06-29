@@ -18,11 +18,12 @@ Assumes **no framework**. Works on any codebase.
 - `pr` (skill) — push + open a pull request (GitHub) or merge request (GitLab), platform auto-detected.
 - `laravel` (skill) — stack pack: Laravel/PHP patterns (Actions/FormRequests/Jobs, queues & Horizon, Eloquent vs document stores, a correctness checklist). The four agents invoke it on demand when the repo is Laravel — stack specialization lives in a skill, not a duplicate family of agents. Adding another stack is a new skill (`django`, `astro`, …), not new agents.
 
-### `meta-workflow` — Claude Code asset authoring
+### `meta-workflow` — Claude Code asset authoring & improvement
 
-For building the tooling itself, not application code.
+For building and improving the tooling itself, not application code.
 
 - `agent-skill-reviewer` — reviews a Claude Code subagent / skill definition file (`.claude/agents/<name>.md`, `SKILL.md`): the `description`/trigger contract, internal coherence, declared-vs-used tools, and routing overlap with siblings. Read-only, returns a report.
+- `retro` (skill) — offline retrospective ("Dream") over your past sessions: a bundled extractor sweeps the local transcripts and distills recurring friction (your corrections, tool errors, permission rejections), then proposes durable fixes (feedback memories, CLAUDE.md rules, hooks). Applies nothing without approval. Good as a weekly habit.
 
 ## Install (any machine)
 

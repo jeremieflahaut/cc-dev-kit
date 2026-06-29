@@ -13,7 +13,7 @@
     {
       "name": "meta-workflow",
       "source": "./plugins/meta-workflow",
-      "description": "Toolkit for authoring Claude Code assets. The agent-skill-reviewer agent reviews subagent / skill definition files (.claude/agents/<name>.md, SKILL.md) for trigger quality, internal coherence, and routing overlap — read-only, returns a report. Complements dev-workflow, which targets application code."
+      "description": "Toolkit for authoring and improving Claude Code assets. The agent-skill-reviewer agent reviews subagent / skill definition files (.claude/agents/<name>.md, SKILL.md) for trigger quality, internal coherence, and routing overlap — read-only, returns a report. The retro skill runs an offline retrospective over your past sessions, distilling recurring friction into durable fixes. Complements dev-workflow, which targets application code."
     }
   ]
 }
