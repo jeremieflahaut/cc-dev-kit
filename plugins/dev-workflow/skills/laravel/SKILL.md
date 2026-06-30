@@ -1,6 +1,6 @@
 ---
 name: laravel
-description: Laravel / PHP framework patterns to apply when designing, implementing, debugging, or reviewing code in a Laravel project — Actions/FormRequests/Jobs, queues & Horizon, Eloquent vs document/cache stores, multi-service topology, vendored packages, and a Laravel correctness checklist. Use when the working repo's composer.json requires laravel/framework, or when a task involves Laravel/Eloquent/Artisan/Horizon. Supplements the project's own conventions — never overrides them. NOT a workflow driver: for a plan→build→review lifecycle use feature-flow, for test-first use tdd — this only supplies the Laravel patterns those (and the workflow agents) apply.
+description: Laravel / PHP framework patterns to apply when designing, implementing, debugging, or reviewing code in a Laravel project — Actions/FormRequests/Jobs, queues & Horizon, Eloquent vs document/cache stores, multi-service topology, vendored packages, and a Laravel correctness checklist. Use when the working repo's composer.json requires laravel/framework, or when a task involves Laravel/Eloquent/Artisan/Horizon. Supplements the project's own conventions — never overrides them. NOT a workflow driver — for a plan→build→review lifecycle use feature-flow, for test-first use tdd — this only supplies the Laravel patterns those (and the workflow agents) apply.
 ---
 
 # Laravel patterns
@@ -70,5 +70,3 @@ Flag, with `file:line` and the canonical sibling to mirror:
 - Tests: wrong folder, missing grouping, unscoped assertions (`Model::all()`/`first()` without filtering to data the test created), hardcoded unique values instead of faker, "didn't crash" assertions with no post-condition.
 
 `declare(strict_types=1)` is a blocker only if the repo's files consistently use it. Don't suggest running the formatter/tests unless the project's conventions say to — many run them in hooks/CI.
-</content>
-</invoke>
