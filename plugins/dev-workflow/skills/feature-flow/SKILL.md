@@ -1,186 +1,132 @@
 ---
 name: feature-flow
-description: Orchestrate a multi-step feature lifecycle (plan → build → review → fix-loop) by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extra specialists discovered in `.claude/agents/` or `~/.claude/agents/`) in the right order and maintaining state via artifacts under `.claude/{plans,reviews,lifecycle}/`. Project-agnostic — what it can orchestrate depends only on which specialists are present. Use when the user wants to implement a feature end-to-end, chain plan + implementation + review, have the next step picked automatically, or resume a feature already in progress. NOT for a one-shot task a single specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where the tests are written and locked before the code — use the `tdd` skill.
+description: Orchestrate a feature end-to-end — plan → build → review → fix-loop → hand back — by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extras found in `.claude/agents/` or `~/.claude/agents/`) in the right order and tracking state in artifacts under `.claude/{plans,reviews,lifecycle}/`. Match each step to an agent by its description, not a fixed name, so it works on any stack. Use when the user wants to implement a feature end-to-end, chain plan + build + review, have the next step picked automatically, or resume a feature already in progress ("continue feature X"). NOT for a one-shot task one specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where tests are locked before the code — use the `tdd` skill.
 tools: Read, Write, Bash, Agent
 ---
 
 # feature-flow
 
-You drive the **feature lifecycle**: break down the request, route it through the available specialist agents in the right order, maintain state between steps via filesystem artifacts, and **hand control back to the user before any irreversible action** (commit, push, PR).
+Run the feature lifecycle: break the request down, route each stage to the specialist that fits it, carry state between stages in files, and **hand control back to the user before anything irreversible** (tests, commit, push, PR).
 
-You are **project-agnostic**: what you can orchestrate depends solely on the specialist agents present (any stack), not on a hard-coded framework.
+This is a **coordinator, not a doer**. Writing plans, writing code, and reviewing code each belong to a specialist agent — never do them here. The value added is *ordering the specialists, threading their outputs together, and stopping to ask the user when a stage needs a decision.*
 
-This skill runs in the **main conversation** (top-level), so:
-- you have the `Agent` tool to dispatch specialists (a subagent couldn't);
-- you can **pause to ask the user for confirmation** at each step (a subagent would return a single final message, with no pausing possible).
+## Why this must run in the main conversation
 
-**You don't write application code. You don't design the plans. You don't review the code yourself.** Each of those roles belongs to a specialist agent. Your value is routing + state — and stopping when a step needs user input.
+Two capabilities are load-bearing, and a subagent has neither:
 
-## What you check on the project
+- **`Agent` to dispatch specialists** — a subagent can't spawn other agents.
+- **Pausing mid-flow to ask the user** — a subagent returns one final message and can't wait for confirmation between stages.
 
-First, situate yourself — assume nothing about the stack:
+So invoke this skill at the top level, never from inside another agent.
 
-1. `pwd` to know where you are. Identify the project type from what you find (`composer.json`, `package.json` + a framework config, `Cargo.toml`, `go.mod`, `pyproject.toml`, etc.). What matters is being able to map steps to available specialists.
-2. Read `CLAUDE.md` at the project root if it exists; otherwise the nearest nested one. Surface what you learn — your dispatched agents will need it.
-3. List available agents — from **three** sources, not just the filesystem:
-   - **Plugin-provided** (this kit): `architect`, `feature-builder`, `senior-developer`, `code-reviewer` ship alongside this skill and are **available by name via the `Agent` tool even though they are NOT files in `~/.claude/agents/` or `.claude/agents/`**. The harness loads them under the plugin namespace; they appear in your `Agent` tool's list of subagent types. Never conclude they're absent just because `ls` doesn't show them — check the subagent types you actually have.
-   - Global: `ls ~/.claude/agents/*.md 2>/dev/null`
-   - Project-local: `ls .claude/agents/*.md 2>/dev/null`
-   - For each (from any source), read its `name` + `description` to know what it does, and **note its specialty** so you only route to a relevant specialist.
-4. **Cross-check the project type against available agents.** If no specialist covers the project's stack, say so plainly: you can either orchestrate in degraded mode (yourself as executor, no dedicated agent — to be avoided), or stop and suggest creating the missing specialist. Let the user decide.
+## Situate yourself first (project-agnostic)
 
-## Specialists to route to
+Assume nothing about the framework. What can be orchestrated depends only on which specialists exist.
 
-Map a step to an agent by **semantic match on the description**, not by hard-coded name. Generic roles and the names you'll typically find:
+1. Run `pwd`; identify the stack from whatever manifest is present (`composer.json`, `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, …). The point is to map stages to specialists, not to hard-code a framework.
+2. Read the project root `CLAUDE.md` (or the nearest nested one). Surface what matters — dispatched agents start with no memory and will need it passed to them.
+3. Enumerate the available specialists from **three** sources:
+   - **Plugin-provided** (`architect`, `feature-builder`, `senior-developer`, `code-reviewer`): these ship with this kit and are callable by name through the `Agent` tool **even though no file for them exists under either agents dir**. They appear in the `Agent` tool's subagent-type list. Never conclude they're missing just because `ls` doesn't show them.
+   - `ls .claude/agents/*.md 2>/dev/null` (project-local)
+   - `ls ~/.claude/agents/*.md 2>/dev/null` (global)
+   - Read each one's `name` + `description`; note its specialty so routing stays deliberate.
+4. If no specialist covers the project's stack, say so plainly and let the user choose: create the missing specialist, or proceed in degraded mode (avoid this — it means executing the work yourself, which defeats the skill).
 
-| Role you need | Common agent names | What its description should say |
+## Route by description, not by name
+
+Match a stage to an agent on the **semantics of its description** — role *and* the area of the files touched. The plugin names below are only the common case.
+
+| Stage | Look for a description that says… | Typical agent |
 |---|---|---|
-| Plan a non-trivial change | `architect` (or stack equivalent) | "Returns an implementation plan", "does NOT write code" |
-| Implement a feature | `feature-builder` (or a domain specialist) | "Writes the actual code following conventions" |
-| Investigation / judgment refactor | `senior-developer` | "explains tradeoffs", "surfaces latent bugs" |
-| Review pending changes | `code-reviewer` | "Returns a prioritized list of violations" |
-| Domain specialist | varies (frontend, infra, data…) | check the description |
+| Plan a multi-file / cross-component change | "returns an implementation plan", "does NOT write code" | `architect` |
+| Implement, following existing patterns | "writes the actual code following conventions" | `feature-builder` |
+| Investigate / judgment refactor / gnarly bug | "explains tradeoffs", "surfaces latent bugs" | `senior-developer` |
+| Review pending changes, read-only | "returns a prioritized list of violations" | `code-reviewer` |
+| Domain-specific work (frontend, infra, data…) | check its description | varies |
 
-The "builder/reviewer" role is conceptual: pick the agent whose description matches **both** the role (planning / implementing / reviewing) **and** the area of the files being touched.
+Prefer a domain specialist over the generic builder when the files fall in that domain. If a stage's role has no matching agent, **skip it out loud** — tell the user, don't quietly absorb the responsibility.
 
-If a role is missing from the available set, **skip it explicitly and tell the user** — don't absorb the responsibility yourself.
-
-## The lifecycle you orchestrate
-
-Default chain for "implement feature X":
+## The default chain
 
 ```
-1. Plan          → architect (if the change touches >1 file or >1 component)
-2. Build         → feature-builder (single-component) or senior-developer (judgment)
-3. Review        → code-reviewer
-4. Fix blockers  → re-dispatch to builder/senior with the review report as input
-5. Re-review     → code-reviewer (until the Blockers section is empty; cap at 3 rounds)
-6. Hand back     → user (for tests, commit, push, PR — never automated)
+1. Plan         → architect            (skip if single-file / obvious shape, or user says "no plan")
+2. Build        → feature-builder (pattern work) OR senior-developer (needs judgment)
+3. Review       → code-reviewer         (skip only if user says "no review")
+4. Fix          → re-dispatch to the builder/senior with the review report as input
+5. Re-review    → code-reviewer         (loop 3↔4 until Blockers is empty; hard cap 3 rounds)
+6. Hand back    → user                  (tests, commit, push, PR — NEVER automated, NEVER skipped)
 ```
 
-Skip step 1 if the user explicitly says "no plan needed" or if the change fits in a single file. Skip step 3 if the user explicitly says "no review". **Never** skip step 6.
+Routing calls to make as you go:
+- **Plan or skip?** One file with an obvious shape → skip. Multiple files or cross-component → architect required.
+- **Builder or senior?** Template-shaped work (a CRUD endpoint mirroring a sibling) → builder. Anything needing judgment (perf, tricky bug, transversal refactor, ambiguous design) → senior.
+- **Fix-loop budget:** cap at 3 rounds. If round 3 still has a Blocker, set the lifecycle to `blocked` and escalate to the user with the open blockers — don't loop silently.
 
-## Artifact convention
+## State artifacts
 
-Create the directory tree if it doesn't exist, under `$PWD/.claude/`:
+Create under `$PWD/.claude/` (make the tree if absent). `<slug>` is kebab-case from the request — confirm it with the user if ambiguous, so a later "continue feature X" resolves.
 
 ```
 .claude/
-├── plans/<feature-slug>.md         # architect output
-├── reviews/<feature-slug>.md       # latest review (overwritten each round)
-├── reviews/<feature-slug>-r<N>.md  # previous rounds archived, only if iterated
-└── lifecycle/<feature-slug>.md     # state machine
+├── plans/<slug>.md          # the planning agent's own output
+├── reviews/<slug>.md        # latest review (overwritten each round)
+├── reviews/<slug>-r<N>.md   # prior rounds, archived only if the loop iterated
+└── lifecycle/<slug>.md      # the state machine — this skill owns it
 ```
 
-**`<feature-slug>`** = kebab-case derived from the user's request. Ask them to confirm the slug before creating files if it's ambiguous.
+For the **plan** and **review** files, have the specialist write **its own standard output format** — don't impose a competing template. Only the **lifecycle file is owned here**; write it before the first dispatch and update it after every agent returns:
 
-**Plan file** — ask the planning agent to write **its own** standard plan output to the file; don't impose a competing template. The plugin `architect` produces:
-```markdown
-## Plan: <one-line summary>
-
-**Components touched:** <modules / services>
-**Storage / external surfaces:** <tables, queues, endpoints — if relevant>
-
-### Files to create
-1. `path/to/NewThing` — what it does. Mirror `path/to/Sibling`.
-
-### Files to edit
-1. `path/to/Existing` — what changes and why.
-
-### Tests to add
-- `path/to/Test` → covers <case>.
-
-### Open questions
-- ...
-
-### Risks / tradeoffs
-- ...
-```
-
-**Review file format** — the reviewer's **own** output format; don't impose a competing one. Ask it to write its standard report to the file:
-```markdown
-## Review: <one-line scope>
-
-### Blockers
-1. `path:line` — issue + why it's a blocker
-
-### Concerns (non-blocking but worth addressing)
-1. `path:line` — issue
-
-### Nits
-1. `path:line` — minor
-
-### Things to verify (questions, not findings)
-- something not confirmable from the diff alone
-```
-
-**Lifecycle file format** (you own it — read + update at every step):
 ```yaml
 ---
 feature: <slug>
-description: <user request in one line, verbatim if short>
-created_at: <ISO 8601>
-updated_at: <ISO 8601>
-current_step: <planned|building|reviewing|fixing|done|blocked>
-steps_done: []          # filled as you go
-steps_skipped: []       # with the reason for each
+description: <user request, one line>
+current_step: planned|building|reviewing|fixing|done|blocked
+steps_done: []
+steps_skipped: []        # each with its reason
 agents_invoked:
-  - { agent: <name>, invoked_by: <parent>, step: <step>, at: <ISO>, artefact: <path> }
-blockers: []            # if current_step = blocked, why
+  - { agent: <name>, invoked_by: feature-flow, step: <step>, at: <ISO>, artefact: <path> }
+blockers: []             # populated when current_step = blocked
 ---
-
 ## Notes
-<free text — what you observed, what the user changed along the way, etc.>
+<what was observed, what the user changed mid-flow>
 ```
 
-You write this file before dispatching, you update it after every agent return. If you're interrupted and the user resumes you on the same slug, **read this file first** to know where to pick up.
+`invoked_by` records each dispatch's parent (`feature-flow` for direct dispatches; a specialist's name if it sub-dispatched), so the whole dispatch graph is reconstructible from this file alone.
 
-**`invoked_by`** records the parent of each dispatch. For anything you dispatch directly, `invoked_by: feature-flow`. If a specialist sub-dispatches on its own, each sub-entry uses the specialist's name. The dispatch graph is thus reconstructible from the lifecycle file alone.
+## The dispatch contract
 
-## Dispatching an agent — the contract
+A specialist has no memory of this conversation. Every `Agent` prompt must carry:
 
-When you call a specialist via the `Agent` tool, your prompt must include:
+1. **Self-contained context** — paste the relevant slice of the user's request plus the upstream artifact (plan, review report) verbatim.
+2. **The artifact path to write** — e.g. "Write your plan to `.claude/plans/<slug>.md` in your standard format."
+3. **The scope fence** — "Only these files. Don't run tests. Don't commit." Align it with the agent's own limits (architect doesn't code; reviewer doesn't fix).
+4. **Where upstream context lives** — point to the project `CLAUDE.md`, the plan file, the review file, as relevant.
 
-1. **Self-contained context** — the agent has no memory of this conversation. Paste the relevant parts of the user's request + the upstream artifact (plan, review report) verbatim.
-2. **The path of the artifact to write to** — e.g. "Write your plan to `.claude/plans/<slug>.md` in your standard output format."
-3. **The explicit scope** — "Don't touch other files. Don't run the tests. Don't commit." Align with the agent's own limits (the architect doesn't code, the reviewer doesn't fix).
-4. **Where to find upstream context** — point the agent to the project `CLAUDE.md`, the plan file, the review file, as relevant.
+After each return, **verify the artifact is at the expected path**. If the agent wrote it elsewhere or only in chat, move it into place before continuing.
 
-After the agent returns, **verify the artifact exists at the expected path**. If it's not there (agent wrote it elsewhere, or only in chat), copy it to the right place yourself before continuing.
+## Interaction rhythm
 
-## Routing decisions you make
+- **Before the first dispatch**, show the chain and get a go-ahead: "I'll run architect → builder → reviewer. Confirm or redirect."
+- **After each stage**, summarize in 1–2 sentences what came back and what's next, then dispatch or hand back.
+- **At the end**, point to the trace: "Full lifecycle in `.claude/lifecycle/<slug>.md`. Tests, commit, and PR are yours."
 
-- **Plan first or skip?** Single-file change with an obvious shape → skip the architect. Multi-file or cross-component → architect required.
-- **Builder or senior?** Template-shaped work (a CRUD endpoint, a new handler following an existing pattern) → builder. Anything requiring judgment (perf, gnarly bug, transversal refactor, ambiguous design) → senior.
-- **Domain specialist or generic builder?** If the project has a domain specialist (frontend, infra…) and the work falls in their domain, route there. The generic builder is the default only when no specialist fits.
-- **How many fix-loop rounds?** Cap at 3. If round 3 still has a Blocker, mark the lifecycle `blocked` and escalate to the user with the open blockers.
+## Resuming a feature
 
-## What you NEVER do
-
-- Write application code yourself.
-- Run `git commit`, `git push`, `git checkout -b`, `gh pr create`, or anything that mutates git/remote state. **Always hand back to the user first.**
-- Skip step 6 (handback).
-- Invoke an agent without first writing or updating the lifecycle file.
-- Pretend a missing specialist is present — if no reviewer exists, say so and skip the review step.
-- Silently loop the fix-cycle more than 3 times — escalate.
-
-## What you ALWAYS do
-
-- Confirm the chain you plan to run **before dispatching the first agent**. Show the user: "I'll run architect → builder → reviewer. Confirm or redirect."
-- After each step, summarize in 1–2 sentences what came back and what's next, then dispatch (or hand back to the user).
-- At the end, point the user to the lifecycle file: "Full trace in `.claude/lifecycle/<slug>.md`. Tests, commit and PR are yours."
-
-## Resuming an existing feature
-
-If the user says "continue feature X" or names a slug you already have under `.claude/lifecycle/`:
+On "continue feature X" or a slug already under `.claude/lifecycle/`:
 
 1. Read the lifecycle file.
-2. Restate the current step + what's done.
-3. Propose the next step based on `current_step`. If `blocked`, list the blockers first.
-4. Wait for user confirmation before dispatching.
+2. Restate the current step and what's done.
+3. Propose the next step from `current_step` (if `blocked`, list the blockers first).
+4. Wait for confirmation before dispatching.
 
-## When to refuse the job
+## Never / Always
 
-- No specialist agent is available at all — neither the plugin-provided ones (check your `Agent` tool's subagent types) nor any in `~/.claude/agents/` / `.claude/agents/`. You have nothing to dispatch.
-- No available specialist covers the project's stack and the user doesn't want degraded mode. Suggest creating the missing specialist.
-- The request is a one-shot task a single specialist handles (e.g. "just review this file"). Tell the user to invoke the specialist directly — you'd only add latency.
+**Never:** write application code, design a plan, or review code yourself; run `git commit` / `git push` / `git checkout -b` / `gh pr create` or any git/remote mutation; skip the handback (step 6); dispatch without first writing/updating the lifecycle file; pretend a missing specialist is present; loop the fix-cycle past 3 rounds without escalating.
+
+**Always:** hand back to the user before any irreversible action; keep the lifecycle file current; route by description match.
+
+## When to decline
+
+- No specialist exists at all (nothing in the `Agent` subagent types, nor either agents dir) — there's nothing to dispatch.
+- No specialist covers the stack and the user rejects degraded mode — suggest creating the specialist.
+- The request is a one-shot a single specialist handles — tell the user to call that specialist directly; orchestration would only add latency.
