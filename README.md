@@ -22,7 +22,6 @@ Assumes **no framework**. Works on any codebase.
 
 For building and improving the tooling itself, not application code.
 
-- `agent-skill-reviewer` — reviews a Claude Code subagent / skill definition file (`.claude/agents/<name>.md`, `SKILL.md`): the `description`/trigger contract, internal coherence, declared-vs-used tools, and routing overlap with siblings. Read-only, returns a report.
 - `retro` (skill) — offline retrospective ("Dream") over your past sessions: a bundled extractor sweeps the local transcripts and distills recurring friction (your corrections, tool errors, permission rejections), then proposes durable fixes (memory notes, CLAUDE.md rules, hooks). Applies nothing without approval. Good as a weekly habit.
 
 ## Install (any machine)
