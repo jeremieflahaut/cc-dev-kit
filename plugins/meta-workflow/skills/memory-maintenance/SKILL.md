@@ -1,6 +1,6 @@
 ---
 name: memory-maintenance
-description: Triage and tidy the current project's Claude auto-memory — decide per note whether to keep it, move it to a versioned file (CLAUDE.md / CONVENTIONS.md), fold it into a skill/agent, delete it, or merge duplicates. Verifies real coverage before acting, executes in safe→risky waves, reconciles the index, and never commits. Use when the user wants to review/clean their memory — "faire le tri / le point sur la mémoire", "nettoyer ma mémoire Claude", "triage/tidy/clean up my memory notes". Different from `retro`: this triages the notes that already exist; retro reads past sessions to propose new ones.
+description: Triage and tidy the current project's Claude auto-memory — decide per note whether to keep it, move it to a versioned file (CLAUDE.md / CONVENTIONS.md), fold it into a skill/agent, delete it, or merge duplicates. Verifies real coverage before acting, executes in safe→risky waves, reconciles the index, and never commits. Use when the user wants to review/clean their memory — "faire le tri / le point sur la mémoire", "nettoyer ma mémoire Claude", "triage/tidy/clean up my memory notes". Different from `retro` — this triages the notes that already exist; retro reads past sessions to propose new ones.
 tools: Read, Edit, Grep, Bash, AskUserQuestion
 ---
 
