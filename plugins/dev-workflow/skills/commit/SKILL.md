@@ -43,5 +43,6 @@ A commit's unit is **the coherent logical change (the intent)**, never the file.
 - The **scope is used** (e.g. `fix(billing): arrondit les montants…`, `feat(auth): add login route`, `docs(readme): …`).
 - Short, descriptive subject, lowercase after the `:`.
 - **Body** when the change warrants it: explains the **why** (the problem being solved), not the "what" already visible in the diff.
+- **Base the message on the commit's *actual* diff, not a cumulative one held in mind**: read `git diff` / `git diff HEAD` of the files being staged and describe *that* delta. On a branch already ahead of `main`, don't reuse an `origin/main...branch` diff remembered from an earlier review — it describes the whole feature, whereas this commit may be only a small delta (e.g. a 3-line `fix` on top of an already-committed `feat`).
 - **Never a `Co-Authored-By` trailer** — no co-author.
 - **No ticket reference** in the commit message.
