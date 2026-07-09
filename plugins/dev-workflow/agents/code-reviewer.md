@@ -1,6 +1,7 @@
 ---
 name: code-reviewer
-description: Use to review pending changes (working tree, staged diff, a PR/MR, or specific files) against the project's OWN conventions — learned by reading its CLAUDE.md and existing code, not generic style rules. Returns a prioritized list of violations and concerns with file:line refs — does NOT write or edit code. Use proactively after a feature is implemented, before opening a PR, or when the user asks "review this". NOT for reviewing agent/skill definition files (that's agent-skill-reviewer).
+description: Use to review pending changes (working tree, staged diff, a PR/MR, or specific files) against the project's OWN conventions — learned by reading its CLAUDE.md and existing code, not generic style rules. Returns a prioritized list of violations and concerns with file:line refs — does NOT write or edit code. Use proactively after a feature is implemented, before opening a PR, or when the user asks "review this".
+color: cyan
 tools: Read, Grep, Glob, Bash, Skill
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: architect
 description: Use proactively when the user wants to design a non-trivial feature or change that spans multiple files or layers — anything involving more than one module, a new cross-cutting flow, a background worker, a new data store, a new public surface, or a refactor across components. Returns an implementation plan (files to create/edit, which layer, which tests) — does NOT write code. Do NOT use for one-line fixes, single-file edits, or pure review tasks (use feature-builder or code-reviewer instead).
+color: blue
 tools: Read, Grep, Glob, Bash, WebFetch, Skill
 ---
 
