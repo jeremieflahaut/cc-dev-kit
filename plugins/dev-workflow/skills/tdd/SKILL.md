@@ -4,209 +4,210 @@ description: Drive a feature test-first (red → green) — write the failing te
 tools: Read, Edit, Write, Glob, Grep, Bash, Agent, AskUserQuestion
 ---
 
-# TDD loop — test-first, hands-free to green
+# TDD (red → green, locked tests)
 
-Drive a feature with the **red → green** cycle: write the tests **first**, watch them fail, then let
-the loop write the implementation until every test passes — **without ever editing the tests**.
+## What this is
 
-This skill is **rails, not the solver.** It does not "implement the feature" in one clever pass. It
-sets up the playground (failing tests + a locked target + a stop condition) and hands the actual
-problem-solving to **a loop of attempts** that converges on green. If you solved it in one shot you
-wouldn't need a loop at all — the iteration *is* the mechanism.
+This skill is **rails, not the solver.** It does not itself figure out the implementation. It sets up three things — (1) a suite of **failing tests** that pin the target behaviour, (2) a **lock** so those tests cannot be edited, and (3) a **stop condition** that only releases once every test passes — and then hands the actual problem-solving to a loop of implementation attempts that converge on green.
 
-Its scope ends at **green + clean teardown.** Reviewing whether the implementation truly generalises
-(rather than overfitting the tests) and committing are **handed back** — this skill points you to the
-project's reviewer / `feature-flow` and `commit` skill; it does not re-orchestrate them.
+The discipline it enforces is the one thing humans and models both cheat on under pressure: **the spec (the tests) is frozen before the code exists, and the code is what moves.** Weakening a test to make it pass is the failure mode this skill exists to prevent.
 
-## Core principles — read before acting
+Scope ends at **green + clean teardown.** Reviewing the diff for overfit and committing are explicitly handed back to the user, not orchestrated here.
 
-- **Integration, not substitution.** Plug into the project's existing workflow; introduce no
-  conventions of your own. Discover and reuse: the project's **test runner + test conventions** for
-  the red phase, the project's **implementation agents** for the green phase, the project's **commit
-  skill** for the handoff. The only thing this skill adds is two *temporary* guardrails (a test-lock
-  and an until-green gate), removed at the end.
-- **One cheat hard-blocked, one cheat flagged.** (1) *Editing the tests* to make them pass → blocked
-  deterministically by a `PreToolUse` hook. (2) *Hard-coding the expected answers* without really
-  implementing the feature (overfitting) → the loop **cannot** catch this: green is necessary, not
-  sufficient. Don't pretend otherwise — **flag it at handoff** so the user (or a reviewer such as
-  `code-reviewer`) verifies the implementation generalises.
-- **Hands-free until green — after you've signed off on RED.** Once armed (Step 2), it runs without
-  interaction. A `Stop` hook re-runs the tests and refuses to end the turn while they are red. There is a built-in safety valve (Claude Code
-  releases the stop after ~8 consecutive blocks), so a genuinely unreachable green stops and reports
-  instead of looping forever.
-- **The tests are the spec.** A test must fail for the *right* reason (assertion / missing symbol),
-  never a syntax error or a wrong test command.
-- **Run from the main conversation.** This skill asks one setup question and dispatches subagents —
-  both need the top-level thread. Don't run it from inside a subagent.
+## Integration, not substitution
+
+Do not invent a test framework, a coding style, or a commit flow. Reuse what the project already has:
+
+- **Red phase** → the project's own test runner and test conventions.
+- **Green phase** → the project's own implementation agents.
+- **Handoff** → the project's own commit skill.
+
+The only things this skill *adds* are **two temporary guardrails** (a lock hook + a stop hook), and it **removes them at teardown.** Nothing it installs survives the session.
+
+## Must run in the main conversation
+
+Run this skill in the **top-level thread.** It asks a setup question (AskUserQuestion) and dispatches subagents — a subagent can do neither. If invoked from inside a subagent, stop and report that it must be run from the main conversation.
 
 ---
 
-## Step 0 — Discover the stack's existing test workflow
+## Step 0 — Discover the test command
 
-Detect the **test command** from the project, in this order — stop at the first that fits:
+Find how this project runs its tests, in this order of authority (first hit wins):
 
-- A documented test convention in the repo (e.g. a `tests/`-level doc, or a `## Testing` section in
-  `CLAUDE.md`) → read it and use the exact command + any container/invocation it specifies (including
-  a `docker exec <container> ./vendor/bin/pest`-style wrapper). Honor its conventions for the red
-  tests too.
-- `composer.json` (script `test`) / `phpunit.xml` → Pest/PHPUnit.
-- `package.json` (script `test`, or vitest/jest dep) → `npm test` / `pnpm test` / `yarn test`.
-- `pytest.ini` / `pyproject.toml` / `tox.ini` → `pytest`.
-- `go.mod` → `go test ./...`. · `Cargo.toml` → `cargo test`. · `.rspec` / `Gemfile` → `rspec`.
-- A `Makefile` with a `test` target → `make test`.
+1. **Documented convention** — `CLAUDE.md`, `CONTRIBUTING.md`, `tests/claude.md`, a `README` "Testing" section.
+2. **PHP** — `composer.json` scripts (`test`, `test-unit`); else `phpunit`/`pest` (`vendor/bin/pest`, `vendor/bin/phpunit`).
+3. **JS/TS** — `package.json` scripts (`test`); else `vitest`/`jest`.
+4. **Python** — `pytest` / `pytest -q`.
+5. **Go / Rust / Ruby** — `go test ./...` / `cargo test` / `bundle exec rspec`.
+6. **Makefile** — a `test` target.
 
-Also note the project's **test file location** (where tests live), which becomes the lock target.
+Also determine, and hold onto:
 
-If the command is **ambiguous or undetectable**, ask — this is the only *configuration* question. Use
-it to also confirm you may run the suite repeatedly during the loop (this satisfies any "ask before
-running the tests" project rule — one confirmation covers the run). The one other pause is the **RED
-checkpoint** at the end of Step 1, before the loop is armed:
+- The **exact command** to run the suite (and, if the runner supports it, the narrower command to run only the new tests — faster loops).
+- The **test file location + naming convention** (e.g. `tests/Feature/`, `*.test.ts`, `*_test.go`). This becomes the **lock target**.
 
-```
-AskUserQuestion → "Which command runs this project's tests?"
-  options: <best-guess command>, "Other"  (header: "Test command")
-```
+If the runner is genuinely ambiguous (multiple plausible commands, no documented default), **ask via AskUserQuestion** — and in the same question confirm you may **run the suite repeatedly** during the loop (some projects gate on slow/expensive suites). Otherwise proceed with the discovered command.
 
-State the detected command and the feature you're about to drive, then proceed.
+## Step 1 — RED: write the failing tests first
 
-## Step 1 — RED: write the failing tests
+Write tests that **describe the expected behaviour**, following the project's conventions (structure, naming, assertion style, fixtures/factories). **No implementation, no stubs, no scaffolding of the code under test** — only the tests.
 
-From the user's feature description, write tests describing the expected behaviour — concrete
-input/output pairs and the edge cases — **following the project's existing test conventions** (the
-documented convention / framework style from Step 0). No house style of your own.
+Run them. Confirm they **fail for the right reason**: an assertion failure or a missing-symbol / undefined-class error — *not* a syntax error in the test, *not* a wrong test command, *not* a misconfigured harness. A test that errors out before it can assert is not a red test; fix it until the failure is a genuine "behaviour absent" failure.
 
-Be explicit that this is TDD: **write no implementation, and no stub that fakes a pass.** Then run the
-test command and **confirm the tests fail for the right reason** (assertion or missing symbol — not a
-syntax error, not a wrong command). Show the red output as evidence.
+Record the **exact set of test files** you wrote — the locked set.
 
-Record the **exact list of test files you wrote/touched** — this is the **locked set**.
+Then **PAUSE at a RED checkpoint.** Present to the user:
 
-**Checkpoint — validate RED before arming (pause here, wait for the user).** The tests are the spec,
-and once Step 2 arms the loop the run goes hands-free — so get explicit sign-off first. Present:
+- the list of locked test files,
+- the red run output (showing the right-reason failures).
 
-- the **locked set** (the test files), with one line per test on what it asserts;
-- the **red output**, as evidence they fail for the right reason (assertion / missing symbol, not a
-  syntax error or wrong command).
+**Get explicit sign-off before arming the guardrails.** The spec freezes on approval — this is the user's chance to correct the target before the code is written against it. Do not proceed to Step 2 unattended.
 
-Ask the user to confirm the tests capture the intended behaviour — or to adjust them. Iterate on the
-tests here as needed; **the spec is only frozen once they approve.** Only on confirmation do you move
-to Step 2 and arm the guardrails.
+## Step 2 — Lock + arm the guardrails
 
-## Step 2 — Lock the tests + arm the loop (the guardrails)
+On approval, create a guard kit under `.claude/tdd/` and wire two hooks into **`.claude/settings.local.json`** — the **local, gitignored** settings file. **Never** touch `.claude/settings.json` (shared/committed): these guardrails are temporary and personal.
 
-Create a small, self-contained guard kit under `.claude/tdd/` and wire two hooks into the project's
-`.claude/settings.local.json` (the *local*, gitignored settings — never `settings.json`, we don't
-commit guardrails).
+### 2a. Record the locked test paths
 
-**`.claude/tdd/locked-tests.txt`** — one locked test path per line. Use **sufficiently-qualified**
-paths (e.g. `tests/Feature/FooTest.php`, not a bare `FooTest.php`) so the suffix match below can't
-deny edits to an unrelated same-named file.
+Write one locked test file path per line to `.claude/tdd/locked-tests.txt` (paths relative to the repo root, as the runner reports them).
 
-**`.claude/tdd/lock-tests.sh`** — deny any edit to a locked test:
+### 2b. The lock hook — `PreToolUse` on Edit|Write
+
+Deny any edit whose `file_path` matches a locked test path. Match by **exact-or-suffix** so an unrelated same-named file elsewhere is not wrongly denied.
+
+Write `.claude/tdd/guard-lock.sh`:
 
 ```bash
 #!/usr/bin/env bash
+# PreToolUse hook (Edit|Write): deny edits to locked test files.
 set -euo pipefail
-dir="$(cd "$(dirname "$0")" && pwd)"
-file="$(jq -r '.tool_input.file_path // empty')"
-[ -z "$file" ] && exit 0
+
+payload="$(cat)"
+locked_file="$(cd "$(dirname "$0")" && pwd)/locked-tests.txt"
+[ -f "$locked_file" ] || exit 0
+
+target="$(printf '%s' "$payload" | jq -r '.tool_input.file_path // empty')"
+[ -n "$target" ] || exit 0
+
 while IFS= read -r locked; do
-  [ -z "$locked" ] && continue
-  if [ "$file" = "$locked" ] || [[ "$file" == *"$locked" ]]; then
-    jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",
-      permissionDecisionReason:"TDD green phase: the tests are locked. Implement the code to satisfy them; do not modify the tests."}}'
+  [ -n "$locked" ] || continue
+  # Match exact path or suffix (so repo-relative locked paths match absolute targets),
+  # anchored on a path boundary so "Foo.php" can't match "OtherFoo.php".
+  if [ "$target" = "$locked" ] || [ "${target%"/$locked"}" != "$target" ]; then
+    jq -n --arg reason "TDD lock: '$locked' is a locked test file and cannot be edited during the red→green loop. Change the implementation instead. (Remove the lock via the tdd skill's teardown if the spec genuinely needs to change.)" \
+      '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $reason}}'
     exit 0
   fi
-done < "$dir/locked-tests.txt"
+done < "$locked_file"
+
 exit 0
 ```
 
-**`.claude/tdd/check-green.sh`** — re-run the suite; block the stop while red. Substitute the Step 0
-command into `TEST_CMD`:
+### 2c. The stop hook — `Stop` re-runs the suite
+
+Re-run the detected test command. **Block** the stop while red (surfacing the latest output so the loop knows what still fails); **allow** it (exit 0) once green.
+
+Write `.claude/tdd/guard-stop.sh` — substitute `<TEST_COMMAND>` with the command from Step 0:
 
 ```bash
 #!/usr/bin/env bash
-dir="$(cd "$(dirname "$0")" && pwd)"
-TEST_CMD='<DETECTED TEST COMMAND FROM STEP 0>'
-if eval "$TEST_CMD" >"$dir/green.out" 2>&1; then
-  exit 0   # green → allow the stop
+# Stop hook: block stopping while tests are red; allow once green.
+set -uo pipefail
+
+cd "$(dirname "$0")/../.." || exit 0   # repo root (.claude/tdd -> repo root)
+
+output="$(<TEST_COMMAND> 2>&1)"
+status=$?
+
+if [ "$status" -eq 0 ]; then
+  exit 0   # green — release the stop
 fi
-jq -n --rawfile out "$dir/green.out" \
-  '{decision:"block", reason:("Tests are still red — keep implementing (never edit the locked tests) until they pass.\n\nLatest output:\n" + $out)}'
+
+reason="TDD stop-guard: tests are still RED — keep implementing (do NOT edit the locked tests). Latest output:
+$output"
+jq -n --arg reason "$reason" '{decision: "block", reason: $reason}'
 exit 0
 ```
 
-`chmod +x` both scripts. Then **merge** (do not overwrite) into `.claude/settings.local.json`:
+> **Safety valve:** Claude Code releases a blocked stop after ~8 consecutive `block` decisions. So an unreachable green does **not** loop forever — it eventually stops and reports still-red, which then flows into teardown (Step 4). This is intended: it prevents an infinite spin on an impossible spec.
 
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      { "matcher": "Edit|Write",
-        "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/tdd/lock-tests.sh\"" } ] }
-    ],
-    "Stop": [
-      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/tdd/check-green.sh\"" } ] }
-    ]
-  }
-}
+### 2d. Arm the hooks (chmod + merge)
+
+Make both scripts executable, then **merge** the hook config into `.claude/settings.local.json` **without clobbering existing hooks**. Use `jq` so a hand-written merge can't drop a pre-existing entry:
+
+```bash
+chmod +x .claude/tdd/guard-lock.sh .claude/tdd/guard-stop.sh
+
+SETTINGS=.claude/settings.local.json
+[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+
+tmp="$(mktemp)"
+jq '
+  .hooks //= {} |
+  .hooks.PreToolUse = ((.hooks.PreToolUse // []) + [{
+    matcher: "Edit|Write",
+    hooks: [{ type: "command", command: "\"$CLAUDE_PROJECT_DIR\"/.claude/tdd/guard-lock.sh" }]
+  }]) |
+  .hooks.Stop = ((.hooks.Stop // []) + [{
+    hooks: [{ type: "command", command: "\"$CLAUDE_PROJECT_DIR\"/.claude/tdd/guard-stop.sh" }]
+  }])
+' "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
 ```
 
-Read the file first and splice these in alongside any existing `hooks`; keep everything else intact.
-Remember exactly what you added so the teardown can remove only that.
+**Remember exactly what you added** (the two entries above), so teardown removes *only* those and leaves any pre-existing hooks intact. Hook changes take effect on the next turn — the guardrails are live for the green loop that follows.
 
 ## Step 3 — GREEN: hand the work to the loop
 
-Now the loop runs the show. The instruction to follow each iteration:
+Hand the problem to an implementation loop with a single mandate:
 
-> Write the **minimal** implementation that satisfies the locked tests. Run the tests. Iterate.
-> **Never** touch the locked tests.
+> Write the **minimal** implementation to satisfy the locked tests. Run the tests. Iterate until they all pass. **Never touch the locked tests.**
 
-The `Stop` hook keeps the turn alive until the suite is green; the `PreToolUse` hook makes editing a
-test impossible. **This is where the problem gets solved — by the loop, not by this skill.**
+**Delegate to the project's own coding agent** when one fits. Discover it first — check the Agent tool's available agent types and `.claude/agents/` (and `~/.claude/agents/`). With the `dev-workflow` plugin present, that's **`feature-builder`** (template-shaped, the design is clear) or **`senior-developer`** (needs judgment — bug-shaped, cross-cutting, or non-obvious). Fall back to writing the implementation **inline** only if no project agent fits.
 
-**Delegate the implementation to the project's own coding agent** when one exists — always
-**discover what's actually available** via the `Agent` tool / `.claude/agents` first. With
-`dev-workflow` installed that's `feature-builder` (new code) or `senior-developer` (cases needing
-reasoning) — on a Laravel project they pull in the `laravel` skill themselves; in another project it
-will be whatever specialist exists there. Fall back to implementing inline only when no specialist
-agent fits. The guardrails apply to delegated work too — a subagent's edits go through the
-same `PreToolUse` lock, and the `Stop` gate fires when the **main** agent tries to finish, so the loop
-runs *through* the delegation (main → delegate → return → run tests → still red? continue/re-delegate).
-*If a `PreToolUse` hook turns out not to fire inside a subagent on this Claude Code build, also pass
-"do not modify the tests" explicitly in the delegation prompt as a belt-and-suspenders.*
+The guardrails apply to delegated work too (hooks are session-global). But **also pass "do not modify the tests" in the delegation prompt** as belt-and-suspenders — `PreToolUse` may not fire inside every subagent context, so the instruction is a second line of defence.
+
+The Stop hook keeps re-running the suite and blocking until green, so the loop is effectively hands-free once dispatched.
 
 ## Step 4 — Teardown + handoff
 
-- **Disarm:** remove the two hooks you added from `.claude/settings.local.json` (leave any pre-existing
-  hooks untouched) and delete `.claude/tdd/`. The tests are unlocked again. Do this even if the loop
-  ended without reaching green (reported via the safety valve) — never leave the guardrails armed.
-- **Recap:** tests written, green status (show the passing output).
-- **Verify it isn't overfit (handed back — not done here):** green proves the locked tests pass, *not*
-  that the implementation generalises — it may have hard-coded the test inputs. Tell the user to review
-  the diff before trusting it, e.g. dispatch `code-reviewer` (or run the broader `feature-flow` review).
-  If that review surfaces a real requirement gap, come back: add a test for it (Step 1, red) and let
-  the loop close again.
-- **Commit (propose, never automatic):** offer to commit the **tests first, then the code** via the
-  project's `commit` skill. Do not run git directly.
+**Always tear down — even if it ended red via the safety valve.** Never leave guardrails armed.
+
+1. **Remove the two added hooks** from `.claude/settings.local.json` — and *only* those two (leave any pre-existing hooks). Then **delete `.claude/tdd/`.**
+
+   ```bash
+   SETTINGS=.claude/settings.local.json
+   tmp="$(mktemp)"
+   jq '
+     .hooks.PreToolUse = [ .hooks.PreToolUse[]? | select(
+       (.hooks[]?.command // "") | test("/.claude/tdd/guard-lock.sh") | not) ] |
+     .hooks.Stop = [ .hooks.Stop[]? | select(
+       (.hooks[]?.command // "") | test("/.claude/tdd/guard-stop.sh") | not) ] |
+     if (.hooks.PreToolUse | length) == 0 then del(.hooks.PreToolUse) else . end |
+     if (.hooks.Stop | length) == 0 then del(.hooks.Stop) else . end |
+     if (.hooks | length) == 0 then del(.hooks) else . end
+   ' "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
+
+   rm -rf .claude/tdd
+   ```
+
+2. **Recap** the locked tests and the final green output (or the still-red output if the safety valve fired — in which case say so plainly and hand back the remaining failures).
+
+3. **Flag the overfit risk.** Green proves the tests pass — it does **not** prove the implementation generalises. It may be hard-coded to the fixtures. Hand back to the user to **review the diff** (e.g. dispatch `code-reviewer`, or run the `feature-flow` review step). If review surfaces a gap, the fix is *another red test* — add it and loop again (re-arm from Step 1). Do not patch the code silently to cover a case no test pins.
+
+4. **Offer to commit** tests-first-then-code via the project's **commit skill**. Never run `git` directly.
 
 ---
 
-## Loop engines (reference)
+## Alternative loop engines (reference)
 
-This skill defaults to the **`Stop` + `PreToolUse` hooks** above because they give hands-free
-execution *and* a deterministic no-cheat guarantee on the test-lock. Two alternatives, if the context
-calls for them:
+The Stop-hook loop above is the default. Two alternatives exist for the GREEN phase — same red-first setup, different engine:
 
-- **`/goal "all tests pass"`** — session-only, no files to clean up; a separate evaluator re-checks
-  after each turn. Lighter, but the no-cheat rule rests on model discipline, not a hard block.
-- **`claude -p` in a shell loop** — fully scripted / out-of-session, each iteration in a *fresh*
-  context (strongest anti-bias): `until <test-cmd>; do claude -p "Tests are red — fix the CODE, never
-  the tests" --allowedTools "Edit,Bash(<test-cmd>)"; done`. Scope `--allowedTools` to exclude the test
-  files.
+- **`/goal "all tests pass"`** — session-only loop, no cleanup to undo. Lighter, but the no-cheat guarantee rests on **model discipline** rather than a hard lock; there's no `PreToolUse` denial, so a stray edit to a test isn't blocked.
+- **`claude -p` in a shell loop** — spawn a fresh headless run each iteration (`while ! <TEST_COMMAND>; do claude -p "make the tests pass without editing them"; done`). Fresh context each pass is the **strongest anti-overfit bias** (no memory of prior hacks). Scope `--allowedTools` to **exclude Edit/Write on the test files** so the loop physically cannot touch the spec.
 
-## Not this skill
+Use the default hook loop unless the user asks for one of these; mention them if the suite is expensive (headless) or if a hard lock is unwanted (`/goal`).
 
-For **raising coverage on code that already exists** (write tests after the fact, never edit the
-source) — use whatever after-the-fact testing/coverage skill the project provides, if any. This skill
-is the opposite direction: tests first, then write the code.
+## Boundaries
+
+- **Not** for raising coverage on code that already exists → use an after-the-fact testing/coverage skill (it writes tests against existing source and never edits it).
+- **Not** for a plan → build → review lifecycle that isn't test-first → use `feature-flow`.
