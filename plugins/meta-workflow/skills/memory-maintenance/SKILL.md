@@ -47,7 +47,9 @@ This step repeatedly overturns first-pass verdicts (a "covered" note whose targe
 
 ## Step 4 — Execute in waves (safe → risky)
 
-Propose each wave and wait for validation before running it:
+**Present the full classified inventory first** — every note with its verdict, grouped by `metadata.type`, not just the exceptions. A bare "N notes: keep" hides what the user is implicitly validating; the keeps are part of the decision too, and the listing is often where the user spots a stale note the classifier missed.
+
+Then propose each wave and wait for validation before running it:
 
 1. **Deletes with verified verbatim coverage** — zero-risk, do first.
 2. **Migrations** — add the fact to its versioned home (respecting that file's own conventions/style/language), *then* delete the note. For a rule covered only single-service, migrate it workspace-wide (e.g. `CONVENTIONS.md`) **before** deleting.
