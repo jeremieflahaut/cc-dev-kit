@@ -43,14 +43,19 @@ Once you've identified the stack, load any dedicated skill for it before judging
 
 Group findings by severity. Within each group, sort by file path. Each finding cites `file_path:line_number`.
 
+**Tag every Blocker and Concern with its provenance class** — it tells the reader where the fix belongs *beyond this diff*:
+
+- `[rule-violated — <source>]` — a written rule existed (project `CLAUDE.md`, documented convention, the author's stated instructions) and the diff breaks it. Name the source. The author *ignored* available guidance — the durable fix is about emphasis/enforcement, not new documentation.
+- `[rule-missing]` — nothing written mandates it; you inferred it from sibling code or general correctness. The durable fix is to *write the rule down* (project `CLAUDE.md`, conventions doc, or the author agent's instructions) — say so.
+
 ```
 ## Review: <one-line scope>
 
 ### Blockers
-1. `path/to/File.ext:14` — <what's wrong> + why it's a blocker. <canonical example to mirror, if any>.
+1. `path/to/File.ext:14` — [rule-violated — CLAUDE.md "<rule>"] <what's wrong> + why it's a blocker. <canonical example to mirror, if any>.
 
 ### Concerns (non-blocking but worth addressing)
-1. `path/to/File.ext:22` — <issue>.
+1. `path/to/File.ext:22` — [rule-missing] <issue>.
 
 ### Nits
 1. `path/to/File.ext:1` — <minor>.

@@ -32,6 +32,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/retro/extract_frictions.py" --days 7 --out
 
 If `corrections_found` is 0 or very low, widen the window before concluding anything.
 
+**Also collect the agent-correction ledgers**: `Grep`/`Glob` the workspace for `.claude/agent-feedback.md` files (written by orchestrators — e.g. the `feature-flow` skill — or by the main session whenever a specialist agent's output had to be corrected). Each row is a *pre-attributed* friction — agent, symptom, correction, cause (`rule-missing` / `rule-ignored` / `routing`) — treat them as first-class signals alongside the extractor's `corrections`.
+
 ## Step 2 — Read and cluster (do not recite)
 
 Read the JSON. **Do not dump the raw list** at the user — synthesising is the whole point of a retro.
@@ -47,6 +49,11 @@ Cluster into **recurring themes**:
 
 For each theme, separate what is **Claude's behaviour** (fix via memory / CLAUDE.md / hook) from what
 is the **user's environment/config** (permissions, missing binaries, token scopes).
+
+Ledger rows route by their `cause` column: recurring **rule-missing** on one agent → propose adding
+the rule to that agent's instructions (or the project `CLAUDE.md`); **rule-ignored** → propose
+rewording/strengthening the existing rule (often: state both sides of the tradeoff); **routing** →
+propose a `description` tweak so the right specialist fires.
 
 ### Precision caveat
 

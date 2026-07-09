@@ -61,6 +61,7 @@ Routing calls to make as you go:
 - **Plan or skip?** One file with an obvious shape → skip. Multiple files or cross-component → architect required.
 - **Builder or senior?** Template-shaped work (a CRUD endpoint mirroring a sibling) → builder. Anything needing judgment (perf, tricky bug, transversal refactor, ambiguous design) → senior.
 - **Fix-loop budget:** cap at 3 rounds. If round 3 still has a Blocker, set the lifecycle to `blocked` and escalate to the user with the open blockers — don't loop silently.
+- **Every fix round is a correction:** log each one in the correction ledger (see State artifacts) before re-dispatching.
 
 ## State artifacts
 
@@ -71,7 +72,8 @@ Create under `$PWD/.claude/` (make the tree if absent). `<slug>` is kebab-case f
 ├── plans/<slug>.md          # the planning agent's own output
 ├── reviews/<slug>.md        # latest review (overwritten each round)
 ├── reviews/<slug>-r<N>.md   # prior rounds, archived only if the loop iterated
-└── lifecycle/<slug>.md      # the state machine — this skill owns it
+├── lifecycle/<slug>.md      # the state machine — this skill owns it
+└── agent-feedback.md        # correction ledger, shared across features (see below)
 ```
 
 For the **plan** and **review** files, have the specialist write **its own standard output format** — don't impose a competing template. Only the **lifecycle file is owned here**; write it before the first dispatch and update it after every agent returns:
@@ -92,6 +94,18 @@ blockers: []             # populated when current_step = blocked
 ```
 
 `invoked_by` records each dispatch's parent (`feature-flow` for direct dispatches; a specialist's name if it sub-dispatched), so the whole dispatch graph is reconstructible from this file alone.
+
+### The correction ledger (`.claude/agent-feedback.md`)
+
+Every time a specialist's output has to be corrected — the reviewer raises a Blocker on the builder's diff, a fix round is dispatched, or you adjust an agent's artifact yourself before continuing — append **one row** to `.claude/agent-feedback.md` (create it with the header if absent):
+
+```markdown
+| date | agent | symptom | correction | cause |
+|---|---|---|---|---|
+| <ISO> | <agent name> | <what was wrong, one clause> | <what fixed it, one clause> | rule-missing \| rule-ignored \| routing |
+```
+
+`cause` routing: **rule-missing** — no written rule covered it (the durable fix is documenting it); **rule-ignored** — the agent had the instruction and broke it (the durable fix is emphasis/wording); **routing** — wrong specialist for the task (the durable fix is a `description` tweak). A reviewer that tags findings `[rule-violated — <source>]` / `[rule-missing]` hands you the cause directly. One row per correction, no prose — this ledger is the raw material offline retros turn into durable prompt/`CLAUDE.md` fixes.
 
 ## The dispatch contract
 
