@@ -23,6 +23,7 @@ Assumes **no framework**. Works on any codebase.
 For building and improving the tooling itself, not application code.
 
 - `retro` (skill) — offline retrospective ("Dream") over your past sessions: a bundled extractor sweeps the local transcripts and distills recurring friction (your corrections, tool errors, permission rejections), then proposes durable fixes (memory notes, CLAUDE.md rules, hooks). Applies nothing without approval. Good as a weekly habit.
+- `memory-maintenance` (skill) — triages the project's existing auto-memory notes: keep, merge duplicates, promote to a versioned file (CLAUDE.md / conventions), fold into a skill/agent, or delete — verifying real coverage before acting, executing in safe→risky waves, never committing. Complements `retro`: retro mines past sessions to propose *new* notes; this one tidies the notes that already exist.
 
 ## Install (any machine)
 
