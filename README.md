@@ -28,7 +28,7 @@ For building and improving the tooling itself, not application code.
 
 ```bash
 # add this repo as a marketplace
-/plugin marketplace add https://github.com/<you>/cc-dev-kit
+/plugin marketplace add https://github.com/jeremieflahaut/cc-dev-kit
 
 # install the plugin(s) you want
 /plugin install dev-workflow@cc-dev-kit
