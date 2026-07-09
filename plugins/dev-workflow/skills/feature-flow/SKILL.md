@@ -1,7 +1,7 @@
 ---
 name: feature-flow
 description: Orchestrate a feature end-to-end — plan → build → review → fix-loop → hand back — by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extras found in `.claude/agents/` or `~/.claude/agents/`) in the right order and tracking state in artifacts under `.claude/{plans,reviews,lifecycle}/`. Match each step to an agent by its description, not a fixed name, so it works on any stack. Use when the user wants to implement a feature end-to-end, chain plan + build + review, have the next step picked automatically, or resume a feature already in progress ("continue feature X"). NOT for a one-shot task one specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where tests are locked before the code — use the `tdd` skill.
-tools: Read, Write, Bash, Agent
+tools: Read, Write, Bash, Agent, Skill
 ---
 
 # feature-flow
@@ -54,6 +54,7 @@ Prefer a domain specialist over the generic builder when the files fall in that 
 3. Review       → code-reviewer         (skip only if user says "no review")
 4. Fix          → re-dispatch to the builder/senior with the review report as input
 5. Re-review    → code-reviewer         (loop 3↔4 until Blockers is empty; hard cap 3 rounds)
+5bis. Verify    → built-in `code-review` skill, ONCE, on the final diff (skip out loud if unavailable)
 6. Hand back    → user                  (tests, commit, push, PR — NEVER automated, NEVER skipped)
 ```
 
@@ -61,7 +62,8 @@ Routing calls to make as you go:
 - **Plan or skip?** One file with an obvious shape → skip. Multiple files or cross-component → architect required.
 - **Builder or senior?** Template-shaped work (a CRUD endpoint mirroring a sibling) → builder. Anything needing judgment (perf, tricky bug, transversal refactor, ambiguous design) → senior.
 - **Fix-loop budget:** cap at 3 rounds. If round 3 still has a Blocker, set the lifecycle to `blocked` and escalate to the user with the open blockers — don't loop silently.
-- **Every fix round is a correction:** log each one in the correction ledger (see State artifacts) before re-dispatching.
+- **Verification gate (5bis):** once the fix-loop has converged, if a built-in `code-review` skill is available in the session, invoke it (Skill tool) ONE time on the final diff. It hunts correctness bugs with independent multi-agent verification — it complements the conventions reviewer, never replaces step 3. A confirmed finding triggers one more fix round (step 4) followed by a quick re-review by the reviewer agent — **never a second `code-review` pass**; if that round fails, go `blocked` as usual. If the skill isn't available, say so and move to handback.
+- **Every fix round is a correction:** log each one in the correction ledger (see State artifacts) before re-dispatching. This includes fix rounds opened by the verification gate — a confirmed gate finding on a specialist's diff is a ledger row (cause is usually `rule-missing`, generic correctness no written rule covered).
 
 ## State artifacts
 
@@ -120,7 +122,7 @@ After each return, **verify the artifact is at the expected path**. If the agent
 
 ## Interaction rhythm
 
-- **Before the first dispatch**, show the chain and get a go-ahead: "I'll run architect → builder → reviewer. Confirm or redirect."
+- **Before the first dispatch**, show the chain and get a go-ahead: "I'll run architect → builder → reviewer, then the `code-review` verification gate. Confirm or redirect."
 - **After each stage**, summarize in 1–2 sentences what came back and what's next, then dispatch or hand back.
 - **At the end**, point to the trace: "Full lifecycle in `.claude/lifecycle/<slug>.md`. Tests, commit, and PR are yours."
 
