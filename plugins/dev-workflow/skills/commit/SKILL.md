@@ -16,12 +16,19 @@ The unit of a commit is **the coherent logical change (the intent)** — never t
 - Many files in one commit is fine. Many **intents** in one commit is a grab-bag to avoid.
 - Good-intent test: the commit is describable **in one sentence without "and"**. If the sentence needs an "and", it is probably two commits.
 
+## Project conventions first
+
+Before proposing any message, **learn this project's own commit rules** — they override every default in this skill. Read the repo-root `CLAUDE.md`, any `CONVENTIONS.md`, and any doc they point to (often a "Commits" / "Git workflow" section), and extract whatever they mandate: **message language**, format, required scope, forbidden trailers, ticket policy.
+
+Apply them. A rule the project **writes down wins over what you'd infer** from `git log`: the history is only the fallback for what the conventions leave unspecified. Silently defaulting to the git-log-inferred language when a `CONVENTIONS.md` rule exists is exactly the failure this step prevents.
+
 ## Flow
 
 1. **Inspect** the working tree:
    - `git status` and `git diff` for tracked modified files.
    - The list of **untracked** files — they are commit candidates too.
-   - `git log --oneline -15 --no-merges` to read the repo's existing commit-message language and style.
+   - The repo-root `CLAUDE.md` / `CONVENTIONS.md` for documented commit rules (see "Project conventions first").
+   - `git log --oneline -15 --no-merges` to read the repo's existing commit-message language and style — **fallback only** for what the conventions don't specify.
 2. **Group by intent.** Classify every tracked-modified **and** untracked file into logical changes. Detect whether the tree holds one intent or several.
 3. **Propose the split BEFORE committing.** Present each planned commit with its file list and its proposed message. **Wait for validation.** Never commit without agreement — even for a single intent.
 4. **Commit.** For each approved commit, stage its precise files, then `git commit`.
@@ -42,7 +49,7 @@ The unit of a commit is **the coherent logical change (the intent)** — never t
 ## Message
 
 - **Format: conventional commits** — `type(scope): subject`. Keep this format even when the repo's history doesn't (match the language, not the format).
-- **Language: follow the repo's existing human-written history** (from the `git log` in step 1). Write in the dominant language of recent messages, ignoring merge and bot commits (dependabot, release bots). Never mix languages within one repo. Default to **English** when the history is empty or has no clear majority.
+- **Language: a documented project rule wins** (see "Project conventions first"). Absent one, **follow the repo's existing human-written history** (from the `git log` in step 1): write in the dominant language of recent messages, ignoring merge and bot commits (dependabot, release bots) and bare branch-name subjects that carry no language. Never mix languages within one repo. Default to **English** when the history is empty, mixed, or has no clear majority.
 - **Use the scope** — e.g. `feat(auth): add login route`, `fix(billing): arrondit les montants`, `docs(readme): …`.
 - Short subject, lowercase after the `:`.
 - **Body only when it earns its place**: explain the **why** (the problem solved), not the *what* already visible in the diff.
