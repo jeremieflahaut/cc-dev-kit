@@ -1,7 +1,7 @@
 ---
 name: feature-flow
-description: Orchestrate a feature end-to-end — plan → build → review → fix-loop → hand back — by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extras found in `.claude/agents/` or `~/.claude/agents/`) in the right order and tracking state in artifacts under `.claude/{plans,reviews,lifecycle}/`. Match each step to an agent by its description, not a fixed name, so it works on any stack. Use when the user wants to implement a feature end-to-end, chain plan + build + review, have the next step picked automatically, or resume a feature already in progress ("continue feature X"). NOT for a one-shot task one specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where tests are locked before the code — use the `tdd` skill.
-tools: Read, Write, Bash, Agent, Skill
+description: Orchestrate a feature end-to-end — frame → plan → build → review → fix-loop → acceptance check → hand back — by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extras found in `.claude/agents/` or `~/.claude/agents/`) in the right order and tracking state in artifacts under `.claude/{plans,reviews,lifecycle}/`. Frames observable acceptance criteria up front (skipped for clear-cut requests) and resolves them before calling the feature done. Match each step to an agent by its description, not a fixed name, so it works on any stack. Use when the user wants to implement a feature end-to-end, chain plan + build + review, have the next step picked automatically, or resume a feature already in progress ("continue feature X"). NOT for a one-shot task one specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where tests are locked before the code — use the `tdd` skill.
+allowed-tools: Read, Write, Bash, Agent, Skill
 ---
 
 # feature-flow
@@ -49,20 +49,24 @@ Prefer a domain specialist over the generic builder when the files fall in that 
 ## The default chain
 
 ```
+0. Frame        → this skill + user     (skip for clear-cut requests — the default; frame when the request is vague or cross-component)
 1. Plan         → architect            (skip if single-file / obvious shape, or user says "no plan")
 2. Build        → feature-builder (pattern work) OR senior-developer (needs judgment)
 3. Review       → code-reviewer         (skip only if user says "no review")
 4. Fix          → re-dispatch to the builder/senior with the review report as input
 5. Re-review    → code-reviewer         (loop 3↔4 until Blockers is empty; hard cap 3 rounds)
 5bis. Verify    → built-in `code-review` skill, ONCE, on the final diff (skip out loud if unavailable)
+5ter. Accept    → this skill            (resolve the `acceptance:` criteria; skip out loud if none were framed)
 6. Hand back    → user                  (tests, commit, push, PR — NEVER automated, NEVER skipped)
 ```
 
 Routing calls to make as you go:
+- **Frame or skip?** A crisp request whose expected result is self-evident (a fix, a small feature with an obvious shape) → skip out loud. Skipping is the default — don't tax small fixes with ceremony. A vague or cross-component request → ask the user 2-3 questions max, then write 2-5 **observable** acceptance criteria (things a test or a look at the running code can check, e.g. "the endpoint returns 422 on an invalid email") into the lifecycle `acceptance:` field.
 - **Plan or skip?** One file with an obvious shape → skip. Multiple files or cross-component → architect required.
 - **Builder or senior?** Template-shaped work (a CRUD endpoint mirroring a sibling) → builder. Anything needing judgment (perf, tricky bug, transversal refactor, ambiguous design) → senior.
 - **Fix-loop budget:** cap at 3 rounds. If round 3 still has a Blocker, set the lifecycle to `blocked` and escalate to the user with the open blockers — don't loop silently.
 - **Verification gate (5bis):** once the fix-loop has converged, if a built-in `code-review` skill is available in the session, invoke it (Skill tool) ONE time on the final diff. It hunts correctness bugs with independent multi-agent verification — it complements the conventions reviewer, never replaces step 3. A confirmed finding triggers one more fix round (step 4) followed by a quick re-review by the reviewer agent — **never a second `code-review` pass**; if that round fails, go `blocked` as usual. If the skill isn't available, say so and move to handback.
+- **Acceptance check (5ter):** once the fix-loop and the verification gate are done, reread the lifecycle `acceptance:` list (skip out loud if it's empty). For criteria the project's test suite can verify, **offer** to run the test command (discovered from `CLAUDE.md` or the manifest scripts) — never run it unprompted; the default remains that tests belong to the handback. A failed criterion triggers one more fix round through the normal mechanics (step 4 + a ledger row). Criteria that can't be automated are listed explicitly at handback. Mark each criterion `verified` (checked, passes) or `handed-back` (left to the user, named at handback) — `done` requires that no criterion is still `pending`.
 - **Every fix round is a correction:** log each one in the correction ledger (see State artifacts) before re-dispatching. This includes fix rounds opened by the verification gate — a confirmed gate finding on a specialist's diff is a ledger row (cause is usually `rule-missing`, generic correctness no written rule covered).
 
 ## State artifacts
@@ -75,6 +79,7 @@ Create under `$PWD/.claude/` (make the tree if absent). `<slug>` is kebab-case f
 ├── reviews/<slug>.md        # latest review (overwritten each round)
 ├── reviews/<slug>-r<N>.md   # prior rounds, archived only if the loop iterated
 ├── lifecycle/<slug>.md      # the state machine — this skill owns it
+├── lifecycle/<slug>.briefs.md  # verbatim dispatch prompts, one section per dispatch (see The dispatch contract)
 └── agent-feedback.md        # correction ledger, shared across features (see below)
 ```
 
@@ -85,10 +90,14 @@ For the **plan** and **review** files, have the specialist write **its own stand
 feature: <slug>
 description: <user request, one line>
 current_step: planned|building|reviewing|fixing|done|blocked
+                         # done means the review loop converged AND every acceptance
+                         # criterion is verified or handed-back — never "review passed" alone
+acceptance: []           # from Frame (empty if skipped); each item:
+                         # - { criterion: <observable check>, status: pending|verified|handed-back }
 steps_done: []
 steps_skipped: []        # each with its reason
 agents_invoked:
-  - { agent: <name>, invoked_by: feature-flow, step: <step>, at: <ISO>, artefact: <path> }
+  - { agent: <name>, invoked_by: feature-flow, step: <step>, at: <ISO>, artefact: <path>, brief: <heading in the briefs file> }
 blockers: []             # populated when current_step = blocked
 ---
 ## Notes
@@ -118,28 +127,30 @@ A specialist has no memory of this conversation. Every `Agent` prompt must carry
 3. **The scope fence** — "Only these files. Don't run tests. Don't commit." Align it with the agent's own limits (architect doesn't code; reviewer doesn't fix).
 4. **Where upstream context lives** — point to the project `CLAUDE.md`, the plan file, the review file, as relevant.
 
+**Persist every brief.** Before each dispatch, append the exact prompt you are sending to `.claude/lifecycle/<slug>.briefs.md` — one section per dispatch, headed `## <step> — <agent> — <ISO timestamp>` — and record that heading in the matching `agents_invoked` entry (`brief:`). The lifecycle file says *where* the flow was; the briefs file says *exactly what the agent in flight was told*. A session that dies mid-build resumes from the verbatim brief, not from a coarse step name.
+
 After each return, **verify the artifact is at the expected path**. If the agent wrote it elsewhere or only in chat, move it into place before continuing.
 
 ## Interaction rhythm
 
-- **Before the first dispatch**, show the chain and get a go-ahead: "I'll run architect → builder → reviewer, then the `code-review` verification gate. Confirm or redirect."
+- **Before the first dispatch**, show the chain (including whether Frame was applied or skipped) and get a go-ahead: "I'll run architect → builder → reviewer, then the `code-review` verification gate and the acceptance check. Confirm or redirect."
 - **After each stage**, summarize in 1–2 sentences what came back and what's next, then dispatch or hand back.
-- **At the end**, point to the trace: "Full lifecycle in `.claude/lifecycle/<slug>.md`. Tests, commit, and PR are yours."
+- **At the end**, point to the trace and the acceptance status: "Full lifecycle in `.claude/lifecycle/<slug>.md`. Acceptance: 3 verified, 1 handed back (manual UI check). Tests, commit, and PR are yours."
 
 ## Resuming a feature
 
 On "continue feature X" or a slug already under `.claude/lifecycle/`:
 
 1. Read the lifecycle file.
-2. Restate the current step and what's done.
-3. Propose the next step from `current_step` (if `blocked`, list the blockers first).
+2. Restate the current step, what's done, and where the `acceptance:` criteria stand.
+3. Propose the next step from `current_step` (if `blocked`, list the blockers first). If the interrupted step had an agent in flight (last `agents_invoked` entry has no artifact on disk), read its section in `.claude/lifecycle/<slug>.briefs.md` and offer to re-dispatch from that exact brief.
 4. Wait for confirmation before dispatching.
 
 ## Never / Always
 
-**Never:** write application code, design a plan, or review code yourself; run `git commit` / `git push` / `git checkout -b` / `gh pr create` or any git/remote mutation; skip the handback (step 6); dispatch without first writing/updating the lifecycle file; pretend a missing specialist is present; loop the fix-cycle past 3 rounds without escalating.
+**Never:** write application code, design a plan, or review code yourself; run `git commit` / `git push` / `git checkout -b` / `gh pr create` or any git/remote mutation; run the test suite without offering first; skip the handback (step 6); dispatch without first writing/updating the lifecycle file and persisting the brief; pretend a missing specialist is present; loop the fix-cycle past 3 rounds without escalating; mark a feature `done` while an acceptance criterion is still `pending`.
 
-**Always:** hand back to the user before any irreversible action; keep the lifecycle file current; route by description match.
+**Always:** hand back to the user before any irreversible action; keep the lifecycle file current; route by description match; resolve every framed acceptance criterion (`verified` or `handed-back`) before closing.
 
 ## When to decline
 
