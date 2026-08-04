@@ -23,13 +23,15 @@ So invoke this skill at the top level, never from inside another agent.
 
 ### 1. Interview — a minimal brief, not a PRD
 
+If a product brief already exists (default `docs/product/brief.md`, or wherever the project's `CLAUDE.md` points), read it first — the interview shrinks to confirming stack and constraints.
+
 Keep it to ~3 questions (AskUserQuestion or plain conversation):
 
 - **What is it?** The product in 3 lines, plus 3-5 MVP success criteria — observable statements ("a visitor can register and see their dashboard"), not feature lists.
 - **Which stack?** If the user hasn't imposed one, propose 2-3 candidates with one-line tradeoffs and let them pick. Never pick silently.
 - **Constraints** — data store, deployment target, anything non-negotiable.
 
-Stop there. Deeper product framing (personas, epics, backlog) is out of scope — brief + criteria is the ceiling.
+Stop there. Deeper product framing (personas, epics, backlog) is out of scope — brief + criteria is the ceiling here. If the user keeps answering at that depth, point them to the product-planning skills (the ones whose descriptions cover shaping a brief, writing a spec/PRD, and cutting stories — the `product-workflow` plugin); if none are installed, say so and keep it a separate exercise.
 
 ### 2. Resolve versions from official docs
 
@@ -61,7 +63,7 @@ This slice is the canonical sibling every later change mirrors — and it valida
 
 ### 6. Hand back
 
-Never `git init`, commit, or push — the first commit belongs to the user (point to the `commit` skill). Close with the point of the whole exercise: "The project is now a brownfield — `feature-flow` takes over from here."
+Never `git init`, commit, or push — the first commit belongs to the user (point to the `commit` skill). Close with the point of the whole exercise: "The project is now a brownfield — `feature-flow` takes over from here. If the product is bigger than a couple of features, run a spec + stories pass first (the product-planning skills, when installed) so feature-flow can then execute it one story at a time."
 
 ## Artifacts
 
@@ -77,4 +79,4 @@ Never `git init`, commit, or push — the first commit belongs to the user (poin
 ## When to decline
 
 - The repo already has application code or a `CLAUDE.md` — it's a brownfield; `feature-flow` or a specialist handles it.
-- The user wants a full product-planning pass (personas, epics, backlog) — out of scope for this skill; do the brief + criteria here and tell them the rest is a separate exercise.
+- The user wants a full product-planning pass (personas, epics, backlog) — out of scope for this skill; do the brief + criteria here and hand the rest to the product-planning skills when installed (`product-workflow`); otherwise say so — it stays a separate exercise.
