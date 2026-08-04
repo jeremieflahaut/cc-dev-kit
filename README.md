@@ -6,13 +6,14 @@ A personal Claude Code marketplace bundling the agents and skills I reuse across
 
 ### `dev-workflow` — stack-agnostic
 
-Assumes **no framework**. Works on any codebase.
+Assumes **no framework**. Works on any codebase — including an empty one (see `greenfield`).
 
 - `architect` — designs a plan for non-trivial / multi-file changes, doesn't write code.
 - `feature-builder` — implements a feature end-to-end, matching the repo's existing patterns.
 - `senior-developer` — judgment work: investigations, tuning, refactors, deep answers.
 - `code-reviewer` — reviews a diff against the project's own conventions, read-only.
-- `feature-flow` (skill) — orchestrates plan → build → review → fix-loop across the agents above.
+- `feature-flow` (skill) — orchestrates frame → plan → build → review → fix-loop → acceptance check across the agents above. Frames observable acceptance criteria up front (skipped for clear-cut requests) and resolves each one before calling the feature done.
+- `greenfield` (skill) — bootstraps a brand-new project: short interview, latest stable versions from official docs, the stack's official scaffolder (user-approved), an initial `CLAUDE.md` as the source of authority, then one reference slice as the canonical sibling. Converts the greenfield into a brownfield, once — then the rest of the kit works as usual.
 - `tdd` (skill) — drives a feature test-first (red → green): writes the failing tests, locks them, then loops hands-free until they pass.
 - `commit` (skill) — atomic git commits grouped by intent.
 - `pr` (skill) — push + open a pull request (GitHub) or merge request (GitLab), platform auto-detected.

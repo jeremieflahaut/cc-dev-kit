@@ -1,6 +1,6 @@
 {
   "name": "dev-workflow",
-  "description": "Stack-agnostic dev workflow toolkit. Agents (architect, feature-builder, senior-developer, code-reviewer) that learn each project's conventions at runtime, plus skills (feature-flow orchestration, tdd, commit, pr) and a `laravel` stack pack the agents pull in on demand on Laravel projects.",
+  "description": "Stack-agnostic dev workflow toolkit. Agents (architect, feature-builder, senior-developer, code-reviewer) that learn each project's conventions at runtime, plus skills (feature-flow orchestration with acceptance criteria, greenfield project bootstrap, tdd, commit, pr) and a `laravel` stack pack the agents pull in on demand on Laravel projects.",
   "author": {
     "name": "Jérémie Flahaut"
   },
