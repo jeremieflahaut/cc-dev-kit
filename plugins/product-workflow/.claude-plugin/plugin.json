@@ -1,0 +1,8 @@
+{
+  "name": "product-workflow",
+  "description": "Upstream product workflow: shape an idea into a brief (product-brief), turn it into a right-sized feature spec or PRD with epics (product-spec), then cut each epic into self-contained story files plus a flat ordered backlog (create-stories). Elicitation happens in the main conversation; drafting is dispatched to a non-interactive product-manager agent. Stories are written so dev-workflow's feature-flow can execute each one from the story file + CLAUDE.md alone. Inspired by BMAD-METHOD and AIDD. Artifacts live under docs/product/ in the target repo. Documents follow the project's working language, not the kit's.",
+  "author": {
+    "name": "Jérémie Flahaut"
+  },
+  "keywords": ["product", "prd", "spec", "brief", "user-stories", "backlog", "epics", "planning", "bmad", "workflow"]
+}

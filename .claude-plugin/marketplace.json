@@ -8,7 +8,12 @@
     {
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
-      "description": "Stack-agnostic dev workflow: architect / feature-builder / senior-developer / code-reviewer agents, plus skills for feature-flow orchestration (with up-front acceptance criteria), greenfield project bootstrap, test-first TDD, commit / pr git, and a `laravel` stack pack the agents pull in on demand. The agents learn each project's conventions at runtime by reading its CLAUDE.md and sibling files — no hardcoded paths or framework."
+      "description": "Stack-agnostic dev workflow: architect / feature-builder / senior-developer / code-reviewer agents, plus skills for feature-flow orchestration (with up-front acceptance criteria; can also execute story files prepared by product-workflow), greenfield project bootstrap, test-first TDD, commit / pr git, and a `laravel` stack pack the agents pull in on demand. The agents learn each project's conventions at runtime by reading its CLAUDE.md and sibling files — no hardcoded paths or framework."
+    },
+    {
+      "name": "product-workflow",
+      "source": "./plugins/product-workflow",
+      "description": "Upstream product workflow: shape an idea into a brief (product-brief), turn it into a right-sized feature spec or PRD with epics (product-spec), then cut each epic into self-contained story files plus a flat ordered backlog (create-stories). Elicitation happens in the main conversation; drafting is dispatched to a non-interactive product-manager agent. Stories are written so dev-workflow's feature-flow can execute each one from the story file + CLAUDE.md alone. Inspired by BMAD-METHOD and AIDD."
     },
     {
       "name": "meta-workflow",
