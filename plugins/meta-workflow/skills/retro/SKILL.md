@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Offline retrospective on your past Claude Code sessions ("Dream") — sweeps the local transcripts over a time window, distills the friction (where the user corrected Claude, tool errors, permission rejections), extracts the recurring patterns, and proposes durable fixes (memory notes, CLAUDE.md rules, skill/agent tweaks, hooks, permission pre-approvals). Run it periodically (e.g. weekly) or when the user wants to understand what keeps going wrong in how they work with Claude. Triggers — "/retro", "run a retro", "what went wrong this week", "analyse my sessions", "how can I improve my Claude Code usage", "fais une rétro", "analyse mes sessions", "qu'est-ce qui n'a pas marché".
-tools: Read, Edit, Write, Grep, Bash, AskUserQuestion
+allowed-tools: Read, Edit, Write, Grep, Bash, AskUserQuestion
 ---
 
 # Session retrospective ("Dream")
