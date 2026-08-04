@@ -14,7 +14,7 @@ Assumes **no framework**. Works on any codebase — including an empty one (see 
 - `code-reviewer` — reviews a diff against the project's own conventions, read-only.
 - `feature-flow` (skill) — orchestrates frame → plan → build → review → fix-loop → acceptance check across the agents above. Frames observable acceptance criteria up front (skipped for clear-cut requests) and resolves each one before calling the feature done. Can also execute story files prepared by `product-workflow` — "run story 2.1", "next story".
 - `greenfield` (skill) — bootstraps a brand-new project: short interview, latest stable versions from official docs, the stack's official scaffolder (user-approved), an initial `CLAUDE.md` as the source of authority, then one reference slice as the canonical sibling. Converts the greenfield into a brownfield, once — then the rest of the kit works as usual.
-- `tdd` (skill) — drives a feature test-first (red → green): writes the failing tests, locks them, then loops hands-free until they pass.
+- `tdd` (skill) — drives a feature test-first (red → green): writes the failing tests, locks them, then loops hands-free until they pass. Can be seeded by a story file — each acceptance criterion becomes a locked failing test.
 - `commit` (skill) — atomic git commits grouped by intent.
 - `pr` (skill) — push + open a pull request (GitHub) or merge request (GitLab), platform auto-detected.
 - `laravel` (skill) — stack pack: Laravel/PHP patterns (Actions/FormRequests/Jobs, queues & Horizon, Eloquent vs document stores, a correctness checklist). The four agents invoke it on demand when the repo is Laravel — stack specialization lives in a skill, not a duplicate family of agents. Adding another stack is a new skill (`django`, `astro`, …), not new agents.

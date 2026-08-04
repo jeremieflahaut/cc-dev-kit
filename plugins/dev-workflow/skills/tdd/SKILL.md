@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Drive a feature test-first (red → green) — write the failing tests FIRST, lock them, then loop hands-free until they pass, wiring the project's OWN test conventions and implementation agents into the loop. Use when the user says "TDD", "test-first", "test-driven", "red-green", "write a failing test then implement", "build/develop X test-first", "faire du TDD", "développe X en TDD". This skill WRITES application code to make the tests pass. It gets you to green with locked tests — reviewing the result (overfit check) and committing are handed back, not orchestrated here. NOT for raising coverage on code that already exists — for that, use an after-the-fact testing/coverage skill if the project provides one (it writes tests against existing source and never edits it). For a plan → build → review feature lifecycle that is NOT test-first, use the `feature-flow` skill.
+description: Drive a feature test-first (red → green) — write the failing tests FIRST, lock them, then loop hands-free until they pass, wiring the project's OWN test conventions and implementation agents into the loop. Use when the user says "TDD", "test-first", "test-driven", "red-green", "write a failing test then implement", "build/develop X test-first", "faire du TDD", "développe X en TDD". Can be seeded by a story file — "run story 2.1 test-first", "développe la story 2.1 en TDD" — the criteria become the failing tests. This skill WRITES application code to make the tests pass. It gets you to green with locked tests — reviewing the result (overfit check) and committing are handed back, not orchestrated here. NOT for raising coverage on code that already exists — for that, use an after-the-fact testing/coverage skill if the project provides one (it writes tests against existing source and never edits it). For a plan → build → review feature lifecycle that is NOT test-first, use the `feature-flow` skill.
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash, Agent, AskUserQuestion
 ---
 
@@ -27,6 +27,15 @@ The only things this skill *adds* are **two temporary guardrails** (a lock hook 
 ## Must run in the main conversation
 
 Run this skill in the **top-level thread.** It asks a setup question (AskUserQuestion) and dispatches subagents — a subagent can do neither. If invoked from inside a subagent, stop and report that it must be run from the main conversation.
+
+## Story intake (product handoff)
+
+If the request is a prepared story — a path under a `stories/` directory, a story id ("run story 2.1 test-first"), or "next story" test-first — the story seeds the red phase instead of a free-form description. (The story format is owned by the story-cutting skill — `create-stories`, `product-workflow` plugin.)
+
+1. **Resolve it.** Explicit path or id → read that story file. "Next story" → read the product backlog (`docs/product/backlog.md`, or the product-docs root the project's `CLAUDE.md` names) and take the first `todo` row whose `depends_on` are all `done`. Nothing resolves → say so and run the normal flow.
+2. **The criteria are the spec.** Each acceptance criterion must be pinned by **at least one failing test**; the RED checkpoint (Step 1) then presents the criterion → test mapping so the user validates that the executable spec covers the product spec before it freezes.
+3. **Mark it in progress.** Flip the story frontmatter `status:` to `in-progress` and its backlog row to match — a file write, reversible; committing stays with the user. At teardown (Step 4), flip both to `review` — `done` is the user's call once the diff is reviewed and merged.
+4. **The story file is the whole product context.** Paste it into the Step 3 delegation prompt (with the usual `CLAUDE.md` pointers) — never the PRD. A story that forces you to open the PRD failed its readiness checklist: tell the user and suggest re-running the story-cutting skill instead of compensating silently.
 
 ---
 
@@ -59,7 +68,8 @@ Record the **exact set of test files** you wrote — the locked set.
 Then **PAUSE at a RED checkpoint.** Present to the user:
 
 - the list of locked test files,
-- the red run output (showing the right-reason failures).
+- the red run output (showing the right-reason failures),
+- for a story-seeded run, the criterion → test mapping (every acceptance criterion pinned by at least one test).
 
 **Get explicit sign-off before arming the guardrails.** The spec freezes on approval — this is the user's chance to correct the target before the code is written against it. Do not proceed to Step 2 unattended.
 

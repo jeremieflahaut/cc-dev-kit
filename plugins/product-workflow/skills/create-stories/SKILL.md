@@ -107,7 +107,7 @@ Top-to-bottom order = intended execution order. Add this epic's stories; never r
 
 ## Hand back
 
-Recap: N stories, their paths, the backlog. The commit belongs to the user (`commit` skill when present). Next: feed a story to the feature lifecycle — "run story <id>" or just "next story". If no such orchestrator is installed (dev-workflow absent), say so — the story files stand on their own.
+Recap: N stories, their paths, the backlog. The commit belongs to the user (`commit` skill when present). Next: feed a story to the feature lifecycle — "run story <id>" or just "next story" — or to the test-first flow — "run story <id> test-first" / "story <id> en TDD" (its acceptance criteria become the locked failing tests). If neither orchestrator is installed (dev-workflow absent), say so — the story files stand on their own.
 
 ## Never / Always
 
