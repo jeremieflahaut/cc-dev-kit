@@ -1,7 +1,7 @@
 ---
 name: feature-flow
-description: Orchestrate a feature end-to-end — frame → plan → build → review → fix-loop → acceptance check → hand back — by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extras found in `.claude/agents/` or `~/.claude/agents/`) in the right order and tracking state in artifacts under `.claude/{plans,reviews,lifecycle}/`. Frames observable acceptance criteria up front (skipped for clear-cut requests) and resolves them before calling the feature done. Match each step to an agent by its description, not a fixed name, so it works on any stack. Use when the user wants to implement a feature end-to-end, chain plan + build + review, have the next step picked automatically, or resume a feature already in progress ("continue feature X"). NOT for a one-shot task one specialist handles (e.g. "review this file" → call the reviewer directly). NOT for test-first/red-green work where tests are locked before the code — use the `tdd` skill.
-allowed-tools: Read, Write, Bash, Agent, Skill
+description: Orchestrate a feature end-to-end — frame → plan → build → review → fix-loop → acceptance check → hand back — by dispatching the available specialist agents (the plugin-provided architect / feature-builder / senior-developer / code-reviewer, plus any extras in `.claude/agents/` or `~/.claude/agents/`), tracking state in artifacts under `.claude/{plans,reviews,lifecycle}/`. Frames observable acceptance criteria up front (skipped for clear-cut requests) and resolves them before calling the feature done. Matches each step to an agent by its description, not a fixed name. Use when the user wants to implement a feature end-to-end, chain plan + build + review, resume a feature in progress ("continue feature X"), or execute a prepared story file — "run story 2.1", "next story", "implémente la story 2.1" (the story seeds the slug and the acceptance criteria). NOT for a one-shot task one specialist handles (call it directly). NOT for test-first work with locked tests — use the `tdd` skill.
+allowed-tools: Read, Edit, Write, Bash, Agent, Skill
 ---
 
 # feature-flow
@@ -31,6 +31,17 @@ Assume nothing about the framework. What can be orchestrated depends only on whi
    - `ls ~/.claude/agents/*.md 2>/dev/null` (global)
    - Read each one's `name` + `description`; note its specialty so routing stays deliberate.
 4. If no specialist covers the project's stack, say so plainly and let the user choose: create the missing specialist, or proceed in degraded mode (avoid this — it means executing the work yourself, which defeats the skill).
+
+## Story intake (product handoff)
+
+If the request is a prepared story — a path under a `stories/` directory, a story id ("run story 2.1"), or "next story" — the story seeds the flow instead of a free-form request. (The story format is owned by the story-cutting skill — `create-stories`, `product-workflow` plugin.)
+
+1. **Resolve it.** Explicit path or id → read that story file. "Next story" → read the product backlog (`docs/product/backlog.md`, or the product-docs root the project's `CLAUDE.md` names) and take the first `todo` row whose `depends_on` are all `done`. Nothing resolves → say so and run the normal flow.
+2. **Seed the flow.** Slug = the story filename without `.md`. The story's acceptance criteria become the lifecycle `acceptance:` list verbatim (all `pending`). Step 0 (Frame) is satisfied by the story — skip it out loud.
+3. **Mark it in progress.** Flip the story frontmatter `status:` to `in-progress` and its backlog row to match — a file write, reversible; committing it stays with the user.
+4. **The story file is the whole product context.** Paste it into every dispatch brief (with the usual `CLAUDE.md` pointers) — never the PRD. A story that forces you to open the PRD failed its readiness checklist: tell the user and suggest re-running the story-cutting skill on it instead of compensating silently.
+
+At handback (step 6), flip the story and its backlog row to `review` — `done` is the user's call once tests pass and the change is merged.
 
 ## Route by description, not by name
 
@@ -62,6 +73,7 @@ Prefer a domain specialist over the generic builder when the files fall in that 
 
 Routing calls to make as you go:
 - **Frame or skip?** A crisp request whose expected result is self-evident (a fix, a small feature with an obvious shape) → skip out loud. Skipping is the default — don't tax small fixes with ceremony. A vague or cross-component request → ask the user 2-3 questions max, then write 2-5 **observable** acceptance criteria (things a test or a look at the running code can check, e.g. "the endpoint returns 422 on an invalid email") into the lifecycle `acceptance:` field.
+- **Product-scale request?** "Build me an app", a multi-epic scope, several distinct user-facing capabilities in one ask → don't one-shot it. Say so and point to the product-planning skills (brief → spec/PRD → stories — the `product-workflow` plugin) so the work comes back here one story at a time. If they aren't installed, say that too and offer to frame the single thinnest slice instead.
 - **Plan or skip?** One file with an obvious shape → skip. Multiple files or cross-component → architect required.
 - **Builder or senior?** Template-shaped work (a CRUD endpoint mirroring a sibling) → builder. Anything needing judgment (perf, tricky bug, transversal refactor, ambiguous design) → senior.
 - **Fix-loop budget:** cap at 3 rounds. If round 3 still has a Blocker, set the lifecycle to `blocked` and escalate to the user with the open blockers — don't loop silently.
@@ -71,7 +83,7 @@ Routing calls to make as you go:
 
 ## State artifacts
 
-Create under `$PWD/.claude/` (make the tree if absent). `<slug>` is kebab-case from the request — confirm it with the user if ambiguous, so a later "continue feature X" resolves.
+Create under `$PWD/.claude/` (make the tree if absent). `<slug>` is kebab-case from the request (a story-seeded run uses the story filename instead, dots included) — confirm it with the user if ambiguous, so a later "continue feature X" resolves.
 
 ```
 .claude/
@@ -148,9 +160,9 @@ On "continue feature X" or a slug already under `.claude/lifecycle/`:
 
 ## Never / Always
 
-**Never:** write application code, design a plan, or review code yourself; run `git commit` / `git push` / `git checkout -b` / `gh pr create` or any git/remote mutation; run the test suite without offering first; skip the handback (step 6); dispatch without first writing/updating the lifecycle file and persisting the brief; pretend a missing specialist is present; loop the fix-cycle past 3 rounds without escalating; mark a feature `done` while an acceptance criterion is still `pending`.
+**Never:** write application code, design a plan, or review code yourself; run `git commit` / `git push` / `git checkout -b` / `gh pr create` or any git/remote mutation; run the test suite without offering first; skip the handback (step 6); dispatch without first writing/updating the lifecycle file and persisting the brief; pretend a missing specialist is present; loop the fix-cycle past 3 rounds without escalating; mark a feature `done` while an acceptance criterion is still `pending`; quietly reopen the PRD during a story-seeded run (report the story as not self-contained instead).
 
-**Always:** hand back to the user before any irreversible action; keep the lifecycle file current; route by description match; resolve every framed acceptance criterion (`verified` or `handed-back`) before closing.
+**Always:** hand back to the user before any irreversible action; keep the lifecycle file current; route by description match; resolve every framed acceptance criterion (`verified` or `handed-back`) before closing; keep a seeded story's `status:` and its backlog row in sync with the lifecycle.
 
 ## When to decline
 
