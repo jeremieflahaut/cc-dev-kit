@@ -22,7 +22,7 @@ Run git commands in the right repository root.
 
 ## Learn the conventions before judging
 
-1. **Read the project's `CLAUDE.md`** (root + the nested one for the area being changed, if any). Treat its rules as the convention baseline — a diff that violates an explicit `CLAUDE.md` rule is a **blocker**.
+1. **Read the project's `CLAUDE.md`** (root + the nested one for the area being changed, if any), and follow any pointer it gives to a conventions doc — a rule that lives there is written, not missing. Treat its rules as the convention baseline — a diff that violates an explicit `CLAUDE.md` rule is a **blocker**.
 2. **Read siblings of the changed files.** Conventions the project follows but doesn't document (naming, layering, error handling, test placement) are visible in the surrounding code. The diff should look like it was written by the same hand.
 3. **Check that new helpers aren't reinventing** something the codebase or its dependencies already provide.
 
