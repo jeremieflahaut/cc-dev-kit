@@ -55,6 +55,10 @@ the rule to that agent's instructions (or the project `CLAUDE.md`); **rule-ignor
 rewording/strengthening the existing rule (often: state both sides of the tradeoff); **routing** →
 propose a `description` tweak so the right specialist fires.
 
+A row records the state at the time of the incident, not the state now — days or weeks separate the
+two, and the fix may have shipped since. Confront a row with the target file at the moment it becomes
+a proposal, not at collection time: drop what is already fixed, re-aim what the row mis-attributed.
+
 ### Precision caveat
 
 The detection heuristic favours recall over precision. In a learning/Socratic context (e.g. a
