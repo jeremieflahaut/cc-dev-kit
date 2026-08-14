@@ -33,8 +33,8 @@ CORRECTION_CUES = [
     r"\btu n'?as pas\b", r"\bil fallait\b", r"\bil faut\b", r"\bannule\b",
     r"\breviens\b", r"\bpourquoi (?:tu|ne|pas|avoir)\b", r"\bje voulais\b",
     r"\berreur\b", r"\bfaux\b", r"\bmauvais\b", r"\bencore une fois\b",
-    r"\bnon pas\b", r"\barr[eê]te\b", r"\bdcommage\b", r"\busine [aà] gaz\b",
-    r"\btrop\b", r"\bdmais\b", r"\bredo\b", r"\bre-?fais\b", r"\bre-?refais\b",
+    r"\bnon pas\b", r"\barr[eê]te\b", r"\busine [aà] gaz\b",
+    r"\btrop\b", r"\bredo\b", r"\bre-?fais\b", r"\bre-?refais\b",
     # English cues (the skill is advertised bilingual — keep recall up for EN-only users)
     r"\bno,? ", r"\bnope\b", r"\bnot what\b", r"\bnot quite\b", r"\binstead\b",
     r"\byou (?:forgot|didn'?t|missed|should|were supposed)\b", r"\bdon'?t\b",
