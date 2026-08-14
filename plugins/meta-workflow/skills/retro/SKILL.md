@@ -55,10 +55,6 @@ the rule to that agent's instructions (or the project `CLAUDE.md`); **rule-ignor
 rewording/strengthening the existing rule (often: state both sides of the tradeoff); **routing** →
 propose a `description` tweak so the right specialist fires.
 
-A row records the state at the time of the incident, not the state now — days or weeks separate the
-two, and the fix may have shipped since. Confront a row with the target file at the moment it becomes
-a proposal, not at collection time: drop what is already fixed, re-aim what the row mis-attributed.
-
 ### Precision caveat
 
 The detection heuristic favours recall over precision. In a learning/Socratic context (e.g. a
@@ -66,25 +62,44 @@ mentor-style project), the user's *questions* ("why not a getter here?", "wouldn
 error?") look like corrections but are not friction — discard them. It is the analysing model's job
 to filter residual noise by judgement, not the extractor's.
 
-## Step 3 — Produce the report
+## Step 3 — Restitute, without proposing anything
 
-Short and actionable, **3 to 6 frictions max**, ranked by frequency/impact. For each:
+One page, no fixes yet: the themes, their recurrence, and what each one actually cost. The reader must
+be able to see the pattern that separate incidents share — that is what the whole-window view is for,
+and it is lost once findings are handed over one at a time.
 
-- **The pattern** in one sentence + occurrence count/evidence (quote 1-2 short verbatims).
-- **The cause**: Claude's behaviour, a missing convention, or a setting.
-- **The proposed fix**, concrete and typed:
-  - *memory* — if the user has a memory system, a note capturing recurring guidance on how Claude
-    should work (state the **why** and **how to apply** so it's actionable later),
-  - *CLAUDE.md rule* (project, or workspace root),
-  - *skill/agent tweak* (description, trigger, body),
-  - *hook* (automatic guardrail, e.g. block a dangerous pattern),
-  - *permission pre-approval* (edit `.claude/settings.json` directly, or use a config skill if one is
-    available, e.g. `update-config`),
-  - *environment gap* (to install/document).
+Only a friction that cost something observable belongs here: a wrong result that stayed silent, lost
+work, a correction the user had to make twice, a session that ended short of its goal. A defect that
+announced itself loudly and was fixed in the same minute is noise at this scale — name it in one line
+and move on. Same for anything you would yourself recommend classing: a finding whose own conclusion
+is "not worth it" never becomes an arbitration.
 
-## Step 4 — Apply (only on approval)
+## Step 4 — Decide, one arbitration per turn
 
-**Apply nothing automatically.** Present the report, then ask which fixes to apply. When applying:
+Split the retained frictions in two.
+
+**Evident and reversible** — a rule contradicting the reference it points at, a stale example, a
+convention that drifted from its source. Apply it, then say what you applied: asking costs the user
+more than the fix.
+
+**Everything else is an arbitration, and each one takes its own turn.** Never present several
+decisions at once — a turn carrying three of them is a turn nobody can answer, and the whole set
+comes back unarbitrated. Each arbitration opens with **what happened**: the dates, the runs
+concerned, what failed, and the consequence that was observed. A proposed rule on its own gives the
+user nothing to weigh, and they will have to ask for the incident before they can decide.
+
+Then the current state of the target file, read rather than remembered. A signal records what was
+true at the time of the incident, never what is true now — days or weeks separate the two, and the
+gap may have been closed since by a fix of yours, an upstream update or a rewrite. What is already
+fixed is dropped and said to be dropped; what the signal mis-attributed is re-aimed. Only then the
+proposal, with its options and your recommendation. Wait for the answer before opening the next one.
+
+Fixes are typed: *memory* (a note on how Claude should work — state the why and how to apply),
+*CLAUDE.md rule* (project or workspace root), *skill/agent tweak* (description, trigger, body),
+*hook* (an automatic guardrail), *permission pre-approval* (`.claude/settings.json` directly, or a
+config skill such as `update-config`), *environment gap* (to install or document).
+
+When applying:
 
 - memories → only if the user has a memory system enabled. Write to its memory directory (the layout
   varies by setup) and update its index. First `Grep` the existing memories/index so you update a
