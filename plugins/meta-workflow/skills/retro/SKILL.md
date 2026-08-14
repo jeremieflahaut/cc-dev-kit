@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Offline retrospective on your past Claude Code sessions ("Dream") — sweeps the local transcripts over a time window, distills the friction (where the user corrected Claude, tool errors, permission rejections), extracts the recurring patterns, and proposes durable fixes (memory notes, CLAUDE.md rules, skill/agent tweaks, hooks, permission pre-approvals). Run it periodically (e.g. weekly) or when the user wants to understand what keeps going wrong in how they work with Claude. Triggers — "/retro", "run a retro", "what went wrong this week", "analyse my sessions", "how can I improve my Claude Code usage", "fais une rétro", "analyse mes sessions", "qu'est-ce qui n'a pas marché".
+description: Offline retrospective on your past Claude Code sessions ("Dream") — sweeps the local transcripts over a time window, distills the friction (where the user corrected Claude, tool errors, permission rejections), extracts the recurring patterns, and opens each one as its own arbitration — a durable fix proposed, decided and applied one at a time (memory notes, CLAUDE.md rules, skill/agent tweaks, hooks, permission pre-approvals). Applies nothing without approval. Run it periodically (e.g. weekly) or when the user wants to understand what keeps going wrong in how they work with Claude. Triggers — "/retro", "run a retro", "what went wrong this week", "analyse my sessions", "how can I improve my Claude Code usage", "fais une rétro", "analyse mes sessions", "qu'est-ce qui n'a pas marché".
 allowed-tools: Read, Edit, Write, Grep, Bash, AskUserQuestion
 ---
 
@@ -50,10 +50,10 @@ Cluster into **recurring themes**:
 For each theme, separate what is **Claude's behaviour** (fix via memory / CLAUDE.md / hook) from what
 is the **user's environment/config** (permissions, missing binaries, token scopes).
 
-Ledger rows route by their `cause` column: recurring **rule-missing** on one agent → propose adding
-the rule to that agent's instructions (or the project `CLAUDE.md`); **rule-ignored** → propose
-rewording/strengthening the existing rule (often: state both sides of the tradeoff); **routing** →
-propose a `description` tweak so the right specialist fires.
+Ledger rows carry their attribution in the `cause` column: **rule-missing** means no written rule
+covered the case, **rule-ignored** means the rule existed and did not fire, **routing** means the
+wrong specialist was picked. Cluster and attribute here; what each cause implies for a fix belongs to
+Step 4.
 
 ### Precision caveat
 
@@ -70,23 +70,23 @@ and it is lost once findings are handed over one at a time.
 
 Only a friction that cost something observable belongs here: a wrong result that stayed silent, lost
 work, a correction the user had to make twice, a session that ended short of its goal. A defect that
-announced itself loudly and was fixed in the same minute is noise at this scale — name it in one line
+announced itself loudly and was fixed in the same minute is not material at this scale — name it in one line
 and move on. Same for anything you would yourself recommend classing: a finding whose own conclusion
 is "not worth it" never becomes an arbitration.
 
 ## Step 4 — Decide, one arbitration per turn
 
-Split the retained frictions in two.
+**Apply nothing without approval** — every fix, however obvious it looks, is an arbitration. The one
+fix that looked most evident in a real run was also the one the user's own answer improved: they
+removed a duplicated rule where the proposal only realigned it. An obvious-looking fix applied on
+their behalf buys one turn and forfeits that.
 
-**Evident and reversible** — a rule contradicting the reference it points at, a stale example, a
-convention that drifted from its source. Apply it, then say what you applied: asking costs the user
-more than the fix.
-
-**Everything else is an arbitration, and each one takes its own turn.** Never present several
-decisions at once — a turn carrying three of them is a turn nobody can answer, and the whole set
-comes back unarbitrated. Each arbitration opens with **what happened**: the dates, the runs
-concerned, what failed, and the consequence that was observed. A proposed rule on its own gives the
-user nothing to weigh, and they will have to ask for the incident before they can decide.
+**Each arbitration takes its own turn.** Never present several decisions at once — a turn carrying
+three of them is a turn nobody can answer, and the whole set comes back unarbitrated. Order them by
+what Step 3 measured each one cost, so that a user who stops after two turns has the expensive
+decisions behind them. Each arbitration opens with **what happened**: the dates, the runs concerned,
+what failed, and the consequence that was observed. A proposed rule on its own gives the user nothing
+to weigh, and they will have to ask for the incident before they can decide.
 
 Then the current state of the target file, read rather than remembered. A signal records what was
 true at the time of the incident, never what is true now — days or weeks separate the two, and the
@@ -98,6 +98,10 @@ Fixes are typed: *memory* (a note on how Claude should work — state the why an
 *CLAUDE.md rule* (project or workspace root), *skill/agent tweak* (description, trigger, body),
 *hook* (an automatic guardrail), *permission pre-approval* (`.claude/settings.json` directly, or a
 config skill such as `update-config`), *environment gap* (to install or document).
+
+A ledger cause maps to a type: **rule-missing** → add the rule to that agent's instructions or the
+project `CLAUDE.md`; **rule-ignored** → reword or strengthen the existing rule (often: state both
+sides of the tradeoff); **routing** → tweak a `description` so the right specialist fires.
 
 When applying:
 
@@ -113,6 +117,8 @@ protected names (employer, private projects) into files the user has marked as p
 
 ## Notes
 
-- Everything is local and read-only over the transcripts; nothing is sent anywhere.
+- The transcript sweep is local and read-only; nothing is sent anywhere, and nothing is written
+  outside the fixes the user approved.
 - To automate weekly: drive this skill from a scheduler (a `schedule`-style skill if one is
-  available, or a plain cron) that opens a PR of proposed fixes — suggest it only if the user asks.
+  available, or a plain cron) — suggest it only if the user asks. An unattended run has nobody to
+  answer an arbitration, so it stops after Step 3 and leaves the restitution to be read.
