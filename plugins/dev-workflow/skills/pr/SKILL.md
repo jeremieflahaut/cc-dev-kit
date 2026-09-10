@@ -32,7 +32,7 @@ git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/ori
 Pick the tool accordingly:
 
 - **GitHub**: prefer **`gh`**. If `gh` isn't installed, fall back to the **GitHub MCP server** (`create_pull_request` tool) when it's connected — see step 5.
-- **GitLab**: **`glab`**, or the `git push -o merge_request.*` options below (no `glab` needed).
+- **GitLab**: prefer **`glab`** when it's installed; otherwise the `git push -o merge_request.*` options below (no `glab` needed).
 
 Only stop if **no working path** exists for the platform (no CLI **and** no MCP). Never substitute a non-creating shortcut (e.g. a prefilled `…/compare?…` or `…/merge_requests/new?…` URL) for actually opening the PR/MR — that just hands the work back to the user.
 
@@ -59,7 +59,16 @@ Only stop if **no working path** exists for the platform (no CLI **and** no MCP)
    ```
    Then call `mcp__github__create_pull_request` with `owner` + `repo` (parsed from the `origin` URL), `head=<branch>`, `base=<default-branch>`, `title`, `body`, `draft`. Load the tool first with ToolSearch `select:mcp__github__create_pull_request` if it isn't already available. It returns JSON `{"url": "...", "id": ...}` — report that `url`.
 
-   **GitLab** (via push options, single command):
+   **GitLab — with `glab`:**
+   ```bash
+   git push -u origin <branch>
+   glab mr create --source-branch <branch> --target-branch <default-branch> \
+     --title "<title>" --description "<description>" \
+     --draft --remove-source-branch --yes
+   ```
+   `--yes` is required — without it `glab mr create` waits on an interactive confirmation prompt. Unlike push options, `--description` accepts **real newlines**, and creation no longer depends on the branch ref moving.
+
+   **GitLab — without `glab`** (via push options, single command):
    ```bash
    DESC='Line 1.\n\nLine 2.\n\n- bullet\n- bullet'   # literal \n, NOT real newlines
    git push -u origin <branch> \
@@ -77,7 +86,8 @@ Only stop if **no working path** exists for the platform (no CLI **and** no MCP)
 6. **Read the output and report** the PR/MR URL:
    - `gh` prints the PR URL directly.
    - GitHub MCP `create_pull_request` returns JSON `{"url": ...}` → report that `url`.
-   - GitLab returns the URL in the push output. A `…/-/merge_requests/<NNN>` URL **with** "already exists" → "MR already existed" + URL (new commits were pushed to it). **Without** it → "MR created" + URL. Only a `…/new?...` URL → no MR created → flag it.
+   - GitLab `glab mr create` prints the MR URL directly.
+   - GitLab push options return the URL in the push output. A `…/-/merge_requests/<NNN>` URL **with** "already exists" → "MR already existed" + URL (new commits were pushed to it). **Without** it → "MR created" + URL. Only a `…/new?...` URL → no MR created → flag it.
    - GitLab `Everything up-to-date` (no MR line at all) → the push options never fired because the ref didn't move. **Don't report a created MR.** Say so, and resolve it: if a CLI/API path exists (`glab`, GitHub MCP equivalent) create the MR through it; otherwise, as a last resort, hand the user the `…/-/merge_requests/new?merge_request%5Bsource_branch%5D=<branch>` URL — the one case where the no-shortcut rule above is relaxed, because no programmatic path remains.
 
 ## Defaults
