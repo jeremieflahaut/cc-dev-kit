@@ -146,7 +146,7 @@ After each return, **verify the artifact is at the expected path**. If the agent
 ## Interaction rhythm
 
 - **Before the first dispatch**, show the chain (including whether Frame was applied or skipped) and get a go-ahead: "I'll run architect → builder → reviewer, then the acceptance check. Add the `code-review` verification gate on the final diff? Confirm or redirect."
-- **After each stage**, summarize in 1–2 sentences what came back and what's next, then dispatch or hand back.
+- **After each stage**, say briefly what came back and what's next, then dispatch or hand back.
 - **At the end**, point to the trace and the acceptance status: "Full lifecycle in `.claude/lifecycle/<slug>.md`. Acceptance: 3 verified, 1 handed back (manual UI check). Tests, commit, and PR are yours."
 
 ## Resuming a feature
