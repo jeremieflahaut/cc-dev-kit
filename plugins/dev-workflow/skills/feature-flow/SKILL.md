@@ -66,7 +66,7 @@ Prefer a domain specialist over the generic builder when the files fall in that 
 3. Review       → code-reviewer         (skip only if user says "no review")
 4. Fix          → re-dispatch to the builder/senior with the review report as input
 5. Re-review    → code-reviewer         (loop 3↔4 until Blockers is empty; hard cap 3 rounds)
-5bis. Verify    → built-in `code-review` skill, ONCE, on the final diff (skip out loud if unavailable)
+5bis. Verify    → built-in `code-review` skill, ONCE, on the final diff — only if the user took it at the go-ahead
 5ter. Accept    → this skill            (resolve the `acceptance:` criteria; skip out loud if none were framed)
 6. Hand back    → user                  (tests, commit, push, PR — NEVER automated, NEVER skipped)
 ```
@@ -77,7 +77,7 @@ Routing calls to make as you go:
 - **Plan or skip?** One file with an obvious shape → skip. Multiple files or cross-component → architect required.
 - **Builder or senior?** Template-shaped work (a CRUD endpoint mirroring a sibling) → builder. Anything needing judgment (perf, tricky bug, transversal refactor, ambiguous design) → senior.
 - **Fix-loop budget:** cap at 3 rounds. If round 3 still has a Blocker, set the lifecycle to `blocked` and escalate to the user with the open blockers — don't loop silently.
-- **Verification gate (5bis):** once the fix-loop has converged, if a built-in `code-review` skill is available in the session, invoke it (Skill tool) ONE time on the final diff. It hunts correctness bugs with independent multi-agent verification — it complements the conventions reviewer, never replaces step 3. A confirmed finding triggers one more fix round (step 4) followed by a quick re-review by the reviewer agent — **never a second `code-review` pass**; if that round fails, go `blocked` as usual. If the skill isn't available, say so and move to handback.
+- **Verification gate (5bis):** offered at the go-ahead, run only if the user takes it. Once the fix-loop has converged, invoke the built-in `code-review` skill (Skill tool) ONE time on the final diff. It hunts correctness bugs with independent multi-agent verification — it complements the conventions reviewer, never replaces step 3. A confirmed finding triggers one more fix round (step 4) and nothing after it — **no re-review, never a second `code-review` pass**; if the fixer can't resolve a finding, go `blocked` as usual. If the skill isn't available, say so and move to handback.
 - **Acceptance check (5ter):** once the fix-loop and the verification gate are done, reread the lifecycle `acceptance:` list (skip out loud if it's empty). For criteria the project's test suite can verify, **offer** to run the test command (discovered from `CLAUDE.md` or the manifest scripts) — never run it unprompted; the default remains that tests belong to the handback. A failed criterion triggers one more fix round through the normal mechanics (step 4 + a ledger row). Criteria that can't be automated are listed explicitly at handback. Mark each criterion `verified` (checked, passes) or `handed-back` (left to the user, named at handback) — `done` requires that no criterion is still `pending`.
 - **Every fix round is a correction:** log each one in the correction ledger (see State artifacts) before re-dispatching. This includes fix rounds opened by the verification gate — a confirmed gate finding on a specialist's diff is a ledger row (cause is usually `rule-missing`, generic correctness no written rule covered).
 
@@ -145,7 +145,7 @@ After each return, **verify the artifact is at the expected path**. If the agent
 
 ## Interaction rhythm
 
-- **Before the first dispatch**, show the chain (including whether Frame was applied or skipped) and get a go-ahead: "I'll run architect → builder → reviewer, then the `code-review` verification gate and the acceptance check. Confirm or redirect."
+- **Before the first dispatch**, show the chain (including whether Frame was applied or skipped) and get a go-ahead: "I'll run architect → builder → reviewer, then the acceptance check. Add the `code-review` verification gate on the final diff? Confirm or redirect."
 - **After each stage**, summarize in 1–2 sentences what came back and what's next, then dispatch or hand back.
 - **At the end**, point to the trace and the acceptance status: "Full lifecycle in `.claude/lifecycle/<slug>.md`. Acceptance: 3 verified, 1 handed back (manual UI check). Tests, commit, and PR are yours."
 
