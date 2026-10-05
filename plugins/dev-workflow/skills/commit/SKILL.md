@@ -1,11 +1,11 @@
 ---
 name: commit
-description: Create one or more git commits from the working tree changes, grouped by intent. Use when the user asks to commit ("commit this", "fais un commit", "commite ces changements", "commit my changes"). Always propose the commit split BEFORE committing and wait for validation. Composable with the `pr` skill, which pushes and opens the pull/merge request.
+description: Create one or more git commits from the working tree changes, grouped by intent. Use when the user asks to commit ("commit this", "fais un commit", "commite ces changements", "commit my changes"). The request to commit is the go-ahead — it commits directly, then reports the split. Composable with the `pr` skill, which pushes and opens the pull/merge request.
 ---
 
 # commit
 
-Turn the working tree changes into one or more git commits, **grouped by intent**. Always propose the split and wait for the user's go-ahead before committing.
+Turn the working tree changes into one or more git commits, **grouped by intent**. The user asking to commit is the go-ahead: commit, then report what was committed.
 
 ## Core principle: atomic commits by intent
 
@@ -18,7 +18,7 @@ The unit of a commit is **the coherent logical change (the intent)** — never t
 
 ## Project conventions first
 
-Before proposing any message, **learn this project's own commit rules** — they override every default in this skill. Read the repo-root `CLAUDE.md`, any `CONVENTIONS.md`, and any doc they point to (often a "Commits" / "Git workflow" section), and extract whatever they mandate: **message language**, format, required scope, forbidden trailers, ticket policy.
+Before writing any message, **learn this project's own commit rules** — they override every default in this skill. Read the repo-root `CLAUDE.md`, any `CONVENTIONS.md`, and any doc they point to (often a "Commits" / "Git workflow" section), and extract whatever they mandate: **message language**, format, required scope, forbidden trailers, ticket policy.
 
 Apply them. A rule the project **writes down wins over what you'd infer** from `git log`: the history is only the fallback for what the conventions leave unspecified. Silently defaulting to the git-log-inferred language when a `CONVENTIONS.md` rule exists is exactly the failure this step prevents.
 
@@ -30,20 +30,19 @@ Apply them. A rule the project **writes down wins over what you'd infer** from `
    - The repo-root `CLAUDE.md` / `CONVENTIONS.md` for documented commit rules (see "Project conventions first").
    - `git log --oneline -15 --no-merges` to read the repo's existing commit-message language and style — **fallback only** for what the conventions don't specify.
 2. **Group by intent.** Classify every tracked-modified **and** untracked file into logical changes. Detect whether the tree holds one intent or several.
-3. **Propose the split BEFORE committing.** Present each planned commit with its file list and its proposed message. **Wait for validation.** Never commit without agreement — even for a single intent.
-4. **Commit.** For each approved commit, stage its precise files, then `git commit`.
+3. **Commit.** For each intent, stage its precise files, then `git commit`. Stop and ask only when the grouping is a genuine decision — a file whose intent you can't tell, or two readings of the split that both hold.
+4. **Report** every commit made — short hash, message, files — so the user can amend or re-split one after the fact.
 
 ## Staging
 
 - Stage the **exact files** of each commit: `git add <path> <path>`.
 - **Never** `git add -A`, `git add .`, or `git add -u` — they sweep in files that belong to a different intent or nowhere at all.
 - **Untracked files are candidates like any other.** A new file is often integral to an intent and goes in the same commit as the related tracked files — classify it by intent, don't skip it.
-- Because the split is always proposed and confirmed first, the user sees exactly which files (including untracked ones) will be staged and can exclude any. That confirmation is the guardrail, not a blanket exclusion.
-- Watch for untracked files that belong in **no** commit — secrets / `.env`, build artifacts, scratch files, unrelated WIP. Don't bundle them; flag them to the user.
+- Watch for untracked files that belong in **no** commit — secrets / `.env`, build artifacts, scratch files, unrelated WIP. Leave them out of every commit and flag them in the report.
 
 ## Guardrails
 
-- Keep the user in control of git: show the split and **ask before every mutating operation**.
+- The request covers staging and committing only. Anything that rewrites or discards history — amend, rebase, reset — and any push still needs its own go.
 - **If on the default branch (`main` / `master`), branch first** — don't commit onto it. Allowed prefixes: `fix/`, `feature/`, `docs/`, `refactor/`, `chore/`. **Confirm the rest of the branch name with the user; don't invent it.**
 
 ## Message
