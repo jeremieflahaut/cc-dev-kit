@@ -1,6 +1,7 @@
 ---
 name: commit
 description: Create one or more git commits from the working tree changes, grouped by intent. Use when the user asks to commit ("commit this", "fais un commit", "commite ces changements", "commit my changes"). The request to commit is the go-ahead — it commits directly, then reports the split. Composable with the `pr` skill, which pushes and opens the pull/merge request.
+effort: medium
 ---
 
 # commit
