@@ -60,17 +60,21 @@ Now hold the diff to the project's bar:
 
 Group findings by severity. Within each group, sort by file path. Each finding cites `file_path:line_number`.
 
-**Tag every Blocker and Concern with its provenance class** — it tells the reader where the fix belongs *beyond this diff*:
+**Tag every Blocker and Concern with its provenance class** — the first that fits, in this order. It tells the reader where the fix belongs *beyond this diff*:
 
 - `[rule-violated — <source>]` — a written rule existed (project `CLAUDE.md`, documented convention, the author's stated instructions) and the diff breaks it. Name the source. The author *ignored* available guidance — the durable fix is about emphasis/enforcement, not new documentation.
-- `[rule-missing]` — nothing written mandates it; you inferred it from sibling code or general correctness. The durable fix is to *write the rule down* (project `CLAUDE.md`, conventions doc, or the author agent's instructions) — say so.
+- `[rule-missing]` — nothing written mandates it, but a specific rule worth writing down would have prevented it; you inferred it from sibling code or a project pattern. The durable fix is to *write the rule down* (project `CLAUDE.md`, conventions doc, or the author agent's instructions) — say so.
+- `[effort]` — no specific rule in play, but ordinary diligence would have caught it: rereading the change, reading the caller or sibling it affects, covering the changed path with a test, checking a comment or doc against the code. The durable fix is the author agent's effort level, not new documentation.
+- `[capability]` — neither a rule nor ordinary diligence would have caught it: a subtle bug that takes knowing the failure mode (retry or idempotency semantics, concurrency, time arithmetic, a security edge case). The durable fix is the author agent's model, or keeping a review gate on that kind of change — not a rule.
+
+A generic diligence instruction ("verify your claims", "write tests") is not a specific rule — missing it is `[effort]`, not `[rule-violated]`.
 
 ```
 ## Review: <one-line scope>
 
 ### Blockers
 1. `path/to/File.ext:14` — [rule-violated — CLAUDE.md "<rule>"] <what's wrong> + why it's a blocker. <canonical example to mirror, if any>.
-2. `path/to/File.ext:31` — [rule-missing] <bug> — fails when <concrete inputs/state → wrong behavior>.
+2. `path/to/File.ext:31` — [<class>] <bug> — fails when <concrete inputs/state → wrong behavior>.
 
 ### Concerns (non-blocking but worth addressing)
 1. `path/to/File.ext:22` — [rule-missing] <issue>.
