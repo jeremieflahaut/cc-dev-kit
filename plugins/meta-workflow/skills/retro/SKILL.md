@@ -32,7 +32,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/retro/extract_frictions.py" --days 7 --out
 
 If `corrections_found` is 0 or very low, widen the window before concluding anything.
 
-**Also collect the agent-correction ledgers**: `Grep`/`Glob` the workspace for `.claude/agent-feedback.md` files (written by orchestrators — e.g. the `feature-flow` skill — or by the main session whenever a specialist agent's output had to be corrected). Each row is a *pre-attributed* friction — agent, symptom, correction, cause (`rule-missing` / `rule-ignored` / `routing`) — treat them as first-class signals alongside the extractor's `corrections`.
+**Also collect the agent-correction ledgers**: `Grep`/`Glob` the workspace for `.claude/agent-feedback.md` files (written by orchestrators — e.g. the `feature-flow` skill — or by the main session whenever a specialist agent's output had to be corrected). Each row is a *pre-attributed* friction — agent, symptom, correction, cause (`routing` / `rule-ignored` / `rule-missing` / `effort` / `capability`) — treat them as first-class signals alongside the extractor's `corrections`.
 
 ## Step 2 — Read and cluster (do not recite)
 
@@ -50,10 +50,11 @@ Cluster into **recurring themes**:
 For each theme, separate what is **Claude's behaviour** (fix via memory / CLAUDE.md / hook) from what
 is the **user's environment/config** (permissions, missing binaries, token scopes).
 
-Ledger rows carry their attribution in the `cause` column: **rule-missing** means no written rule
-covered the case, **rule-ignored** means the rule existed and did not fire, **routing** means the
-wrong specialist was picked. Cluster and attribute here; what each cause implies for a fix belongs to
-Step 4.
+Ledger rows carry their attribution in the `cause` column, the first that applies in this order:
+**routing** means the wrong specialist was picked, **rule-ignored** that a specific rule existed and
+did not fire, **rule-missing** that a specific rule worth writing down would have prevented it,
+**effort** that ordinary diligence would have caught it, **capability** that neither would have.
+Cluster and attribute here; what each cause implies for a fix belongs to Step 4.
 
 ### Precision caveat
 
@@ -95,13 +96,17 @@ fixed is dropped and said to be dropped; what the signal mis-attributed is re-ai
 proposal, with its options and your recommendation. Wait for the answer before opening the next one.
 
 Fixes are typed: *memory* (a note on how Claude should work — state the why and how to apply),
-*CLAUDE.md rule* (project or workspace root), *skill/agent tweak* (description, trigger, body),
+*CLAUDE.md rule* (project or workspace root), *skill/agent tweak* (description, trigger, body,
+`model`/`effort` frontmatter),
 *hook* (an automatic guardrail), *permission pre-approval* (`.claude/settings.json` directly, or a
 config skill such as `update-config`), *environment gap* (to install or document).
 
-A ledger cause maps to a type: **rule-missing** → add the rule to that agent's instructions or the
-project `CLAUDE.md`; **rule-ignored** → reword or strengthen the existing rule (often: state both
-sides of the tradeoff); **routing** → tweak a `description` so the right specialist fires.
+A ledger cause maps to a type: **routing** → tweak a `description` so the right specialist fires;
+**rule-ignored** → reword or strengthen the existing rule (often: state both sides of the
+tradeoff); **rule-missing** → add the rule to that agent's instructions or the project `CLAUDE.md`;
+**effort** → raise that agent's `effort` in its frontmatter, or the session effort when the rows
+come from agents that inherit it; **capability** → move that agent to a more capable `model`, or
+keep the review gate that caught it — never a rule, since none would have prevented it.
 
 When applying:
 
