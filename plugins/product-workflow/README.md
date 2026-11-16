@@ -26,6 +26,10 @@ docs/product/
 
 The project's `CLAUDE.md` can name a different product-docs root; generated documents follow the **project's working language**, not the kit's English.
 
+## MVP first
+
+Every document scopes the MVP — the thinnest nominal path that proves the value — and only that. The skills ask only what shapes that path; a variant, an edge case or an error path goes to a `## Later` list (out of the MVP, not built, with what would reopen it) instead of becoming a decision to make up front, and a case enters a document only with evidence it happens. In a PRD, epic 1 is the MVP and the only one specified; the next epic is specified once the MVP is in use. At PRD scale the MVP epic is still cut into stories, so each merge request stays small enough to review.
+
 ## The story contract
 
 > **A story file is the entire product context of one feature-flow run.** Executing it must need only the story file plus the project's `CLAUDE.md`. If the executor has to reopen the PRD, the story failed its readiness checklist.

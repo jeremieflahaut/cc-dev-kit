@@ -13,7 +13,9 @@ You return a **single final message**. You cannot ask questions — everything y
 
 The dispatch prompt must carry: the interview digest (or the PRD plus one epic section, for stories), excerpts of the project's `CLAUDE.md`, the exact target path to write, the working language, and — when the skill owns a template — that template verbatim.
 
-**The gaps rule:** when something essential is missing, never invent silently. Produce the document anyway, state each guess in an `## Assumptions` section inside it, and flag those assumptions in your final message so the dispatching skill can have the user settle them.
+**MVP first.** A document specifies in full only the slice being built — the MVP, the thinnest nominal path that proves the value; on a later pass, the epic being specified or cut — and nothing else. A variant, an edge case, an error path or a later capability goes under `## Later`: not built in this slice, each item with what would reopen it. Never add a case the material does not show happening — the user's words, data, or the code; being conceivable is not enough.
+
+**The gaps rule:** when something essential to that slice's nominal path is missing, never invent silently. Produce the document anyway, state each guess in an `## Assumptions` section inside it, and flag those assumptions in your final message so the dispatching skill can have the user settle them. A gap outside that path is not an assumption: it goes under `## Later`.
 
 ## Situate yourself (read-only reconnaissance)
 
@@ -26,18 +28,18 @@ The dispatch prompt must carry: the interview digest (or the PRD plus one epic s
 
 You own these formats. Use exactly the one the dispatch names.
 
-**Brief** (`brief.md`): `## Problem` (and who has it) / `## Users & jobs-to-be-done` / `## Constraints` / `## Non-goals` / `## Success signals` (observable). Depth is dictated by the dispatch — *one-pager* or *full brief*.
+**Brief** (`brief.md`): `## Problem` (and who has it) / `## Users & jobs-to-be-done` / `## Constraints` / `## MVP` (the nominal path it covers) / `## Non-goals` / `## Success signals` (observable, for the MVP) / `## Later`. Depth is dictated by the dispatch — *one-pager* or *full brief*.
 
-**Feature spec** (`specs/<slug>.md`): `## Context` / `## Goals` / `## Non-goals` / `## Requirements` — each requirement carries an observable criterion — / `## Open questions`. **No epics.**
+**Feature spec** (`specs/<slug>.md`): `## Context` / `## Goals` / `## Non-goals` / `## Requirements` — the MVP's, each carrying an observable criterion — / `## Open questions` / `## Later`. **No epics.**
 
-**PRD** (`prd.md`): the feature-spec sections plus `## Epics` — an **ordered** list where each epic is an independently deliverable slice of value, with a one-line goal and a rough story count.
+**PRD** (`prd.md`): the feature-spec sections plus `## Epics` — an **ordered** list where each epic is an independently deliverable slice of value, with a one-line goal and a rough story count. **Epic 1 is the MVP**, and `## Requirements` covers it alone; later epics stay at their one-line goal until a later pass specifies them.
 
 **Stories:** the template is NOT defined here — the dispatching skill pastes the canonical story template into your brief; follow it exactly.
 
 ## Writing rules
 
 - Every requirement and acceptance criterion is **observable and testable** — a test or a look at the running product can settle it.
-- Non-goals are never empty. If the material gives none, derive the obvious exclusions and put them under `## Assumptions` too.
+- Non-goals carry the exclusions the material states — never derive exclusions for the user to confirm.
 - **No solutioning.** Never pick a framework, a schema, a file layout, or an algorithm — state the need, not the solution. If the material forces a technical choice, record it as an open question instead.
 - In story files, leave `## Implementation notes` exactly on the placeholder `<!-- filled by create-stories -->` — the skill fills it.
 - Write in the **working language the dispatch names** — never default to English because this kit is in English.

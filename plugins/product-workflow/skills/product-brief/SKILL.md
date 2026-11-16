@@ -1,6 +1,6 @@
 ---
 name: product-brief
-description: Socratic product-framing interview run in the main conversation — problem, target users, jobs-to-be-done, constraints, non-goals, success signals — condensed into a right-sized brief at docs/product/brief.md (one page for a small feature, a full brief for a product). Use when the user has an idea to shape before any spec exists — "I have an idea", "help me think through this project", "frame this need", "j'ai une idée de projet", "aide-moi à cadrer ce besoin", "réfléchissons à ce produit". Also OFFER it — one line, then wait, never start it unasked — when the user describes as a wish a feature, tool, automation or pipeline that does not exist yet and no brief or spec covers it ("when X happens I'd like Y to…", "j'aimerais que…", "il faudrait que…", "quand X, je voudrais que…"), before proposing any architecture or design decision. Optional step — product-spec can start without it. NOT for writing the requirements document itself (use product-spec), NOT for cutting stories (use create-stories), NOT for scaffolding code (use greenfield).
+description: Socratic product-framing interview run in the main conversation — problem, target users, jobs-to-be-done, constraints, the MVP and its non-goals, success signals — condensed into a right-sized brief at docs/product/brief.md (one page for a small feature, a full brief for a product). Use when the user has an idea to shape before any spec exists — "I have an idea", "help me think through this project", "frame this need", "j'ai une idée de projet", "aide-moi à cadrer ce besoin", "réfléchissons à ce produit". Also OFFER it — one line, then wait, never start it unasked — when the user describes as a wish a feature, tool, automation or pipeline that does not exist yet and no brief or spec covers it ("when X happens I'd like Y to…", "j'aimerais que…", "il faudrait que…", "quand X, je voudrais que…"), before proposing any architecture or design decision. Optional step — product-spec can start without it. NOT for writing the requirements document itself (use product-spec), NOT for cutting stories (use create-stories), NOT for scaffolding code (use greenfield).
 allowed-tools: Read, Write, Grep, Glob, Bash, Agent, AskUserQuestion
 ---
 
@@ -43,8 +43,8 @@ Six themes to cover, **in dependency order** (each answer shapes the next questi
 2. **Users & jobs-to-be-done** — who they are, what job they hire this for.
 3. **Existing alternatives** — how the job gets done today, and why that isn't enough.
 4. **Constraints** — time, money, platform, anything non-negotiable.
-5. **Non-goals** — what this deliberately won't do.
-6. **Success signals** — observable statements that would prove it works.
+5. **The MVP** — the thinnest nominal path that proves the value, what it deliberately won't do (non-goals), and what waits for later.
+6. **Success signals** — observable statements that would prove the MVP works.
 
 Rules of the interview:
 
@@ -52,16 +52,17 @@ Rules of the interview:
 - **Dig into the previous answer** rather than marching through the list — the themes are a coverage check, not a script.
 - **Restate to validate** — after a dense answer, reflect it back in one sentence before moving on.
 - **Challenge a solution disguised as a need** — "you named a tool; what's the job it does?".
+- **Ask only what shapes the problem or the MVP's nominal path.** A variant, an edge case or an error path is not a question: note it under *Later* in the digest. Raise an edge case at all only with evidence it happens — the user's words, data, or the code.
 - **Stop** when every theme has substance, or when the user says stop. Partial coverage is fine — the gaps become `## Assumptions` for the writer.
 
 ## Right-size, then dispatch
 
 Announce the depth before dispatching, based on what the interview revealed:
 
-- **One-pager** — a small feature or a narrow tool: the five brief sections, one page.
+- **One-pager** — a small feature or a narrow tool: the brief sections, one page.
 - **Full brief** — product scale: several capabilities or user types.
 
-Build the **interview digest**: faithful bullets per theme, keeping the user's exact words on the problem statement. Then dispatch the product-writing agent — **route by description**: the agent whose description says it drafts product documents from a complete inline brief, never interviews. The dispatch prompt carries:
+Build the **interview digest**: faithful bullets per theme plus the *Later* list, keeping the user's exact words on the problem statement. Then dispatch the product-writing agent — **route by description**: the agent whose description says it drafts product documents from a complete inline brief, never interviews. The dispatch prompt carries:
 
 1. The digest verbatim, gaps included.
 2. The chosen depth (one-pager / full brief).

@@ -29,7 +29,7 @@ This section is the only place the root is defined — if the default ever chang
 2. Read `<product-root>/backlog.md` if it exists — which epics are already cut? If the requested epic already has stories, propose **completing/updating** them; **never duplicate an id**, never renumber existing stories silently.
 3. Read the project's `CLAUDE.md` — it travels in the dispatch AND in every downstream execution; it's the other half of the contract.
 4. **Determine the working language** (user's explicit choice > existing docs under `<product-root>` > conversation language) and announce it.
-5. Pick the epic: the one the user names, otherwise propose the first epic with no stories yet.
+5. Pick the epic: the one the user names, otherwise propose the first epic with no stories yet — the MVP comes first. An epic still at its one-line goal, with no requirements in the PRD, is not ready: point to `product-spec` to specify it first.
 
 ## The story file format
 
@@ -52,7 +52,7 @@ Why this story exists and the user outcome — self-contained, no "see the PRD".
 
 ## Scope
 **In:** …
-**Out:** …
+**Out:** … — including the Later items this story touches, each with what would reopen it.
 
 ## Acceptance criteria
 2-5 observable checks — a test or a look at the running product decides each one.
@@ -65,7 +65,7 @@ Why this story exists and the user outcome — self-contained, no "see the PRD".
 
 Route by description (the non-interactive product-writing agent). Everything inline:
 
-1. The PRD's intro and non-goals — **not the whole PRD**.
+1. The PRD's intro, non-goals and `## Later` — **not the whole PRD**.
 2. The **full epic section verbatim**.
 3. The project's `CLAUDE.md` (or its relevant slice).
 4. **The story template above, pasted verbatim** — "follow it exactly".
@@ -88,7 +88,8 @@ No code yet in the repo? Say so and write "no sibling yet — the reference slic
 
 - [ ] **Self-contained** — concrete test: grep the story for dangling references ("as described in the PRD", "see epic", a term defined nowhere in the file).
 - [ ] 2-5 **observable, testable** acceptance criteria.
-- [ ] **Sized for one feature-flow run** — one coherent vertical slice; too big → cut it in two and renumber *before* going further.
+- [ ] **Sized for one feature-flow run** — one coherent vertical slice, one merge request a reviewer reads in one sitting; too big → cut it in two and renumber *before* going further.
+- [ ] **Nominal path only** — criteria cover what the epic delivers; variants and edge cases sit under **Out**.
 - [ ] `depends_on` declared and pointing at real ids.
 - [ ] Placeholder replaced; language conforms.
 
