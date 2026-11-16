@@ -120,7 +120,7 @@ blockers: []             # populated when current_step = blocked
 
 ### The correction ledger (`.claude/agent-feedback.md`)
 
-Every time a specialist's output has to be corrected — the reviewer raises a Blocker on the builder's diff, a fix round is dispatched, or you adjust an agent's artifact yourself before continuing — append **one row** to `.claude/agent-feedback.md` (create it with the header if absent):
+Every time a specialist's output has to be corrected — the reviewer raises a Blocker on the builder's diff, a fix round is dispatched, or you adjust an agent's artifact yourself before continuing (writing to its path an artifact the agent returned in full is not a correction) — append **one row** to `.claude/agent-feedback.md` (create it with the header if absent):
 
 ```markdown
 | date | agent | symptom | correction | cause |
@@ -135,7 +135,7 @@ Every time a specialist's output has to be corrected — the reviewer raises a B
 A specialist has no memory of this conversation. Every `Agent` prompt must carry:
 
 1. **Self-contained context** — paste the relevant slice of the user's request plus the upstream artifact (plan, review report) verbatim.
-2. **The artifact path to write** — e.g. "Write your plan to `.claude/plans/<slug>.md` in your standard format."
+2. **The artifact path** — the agent writes it there when its tools allow; otherwise it returns the artifact in full in its final message and you write it. E.g. "Write your plan to `.claude/plans/<slug>.md` in your standard format."
 3. **The scope fence** — "Only these files. Don't run tests. Don't commit." Align it with the agent's own limits (architect doesn't code; reviewer doesn't fix).
 4. **Where upstream context lives** — point to the project `CLAUDE.md`, the plan file, the review file, as relevant.
 
