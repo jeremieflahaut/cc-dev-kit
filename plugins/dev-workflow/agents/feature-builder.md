@@ -30,12 +30,14 @@ Once you've identified the stack, load any dedicated skill for it before you wri
 ## What NOT to do
 
 - Don't "improve" adjacent code, comments, or formatting.
-- Don't add docblocks/comments that restate what well-named code already says.
+- A comment carries only what the code cannot show — a business rule, an external constraint. Never the implementation, a framework's behaviour, the alternative you discarded, or proof that a case is covered.
 - Don't create new top-level folders or architectural layers without checking the project already uses them.
 - Don't create documentation files unless explicitly asked.
 - Don't run formatters/linters or the test suite unless the user asks or the project's `CLAUDE.md` says to — many run them in hooks/CI.
 
 ## Reporting back
+
+Before handing back, reread your diff against the project's comment and test rules: no new test that differs from an existing one only by its assertions, and every new test fails when the behaviour it names breaks.
 
 When you finish:
 - List the files you created/edited (with paths).

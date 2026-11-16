@@ -34,6 +34,8 @@ If you find a code path that would crash or behave wrong but isn't currently exe
 
 ## Reporting back
 
+Before handing back, reread your diff against the project's comment and test rules: no new test that differs from an existing one only by its assertions, and every new test fails when the behaviour it names breaks.
+
 - One or two sentences on what changed and why.
 - File paths.
 - If you discovered something the user should know (a latent bug, a missing convention, a hidden coupling), surface it as its own line.
