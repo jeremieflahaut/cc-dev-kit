@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: '\[rule-violated — [^\]]*CLAUDE\.md'
+pattern: '\[rule-violated\s*[—:–-]\s*[^\]]*CLAUDE\.md'
 target: trace
 ---
